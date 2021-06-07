@@ -8,18 +8,7 @@ var addMarkerEvent;
 
 // dapat itong mga variable na ito ay kunin from some storage
 
-var patientLocations = [
-    {id: 1, lat: 14.697017, lng: 121.088796},
-    {id: 2, lat: 14.697387, lng: 121.088833},
-    {id: 3, lat: 14.697466, lng: 121.089262},
-    {id: 4, lat: 14.696853, lng: 121.089793},
-    {id: 5, lat: 14.697095, lng: 121.088123},
-    {id: 6, lat: 14.69758, lng: 121.089948},
-    {id: 7, lat: 14.696770995311615, lng: 121.0894509851164},
-    {id: 8, lat: 14.696453261995734, lng: 121.0892525843236},
-    {id: 9, lat: 14.696811993882754, lng: 121.08935561739372},
-    {id: 10, lat: 14.695496, lng: 121.089083}
-];
+var patientLocations = [];
 
 function initMap() {
     map = new google.maps.Map(document.getElementById("map"), {

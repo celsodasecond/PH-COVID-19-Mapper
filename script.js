@@ -2,6 +2,10 @@ var map;
 var myLatLng = { lat: 14.697580, lng: 121.089948};
 var myZoom = 18;
 var removeMode = false;
+var addMode = false;
+var counter = 0; //will serve as id for newly created markers
+var addMarkerEvent;
+
 // dapat itong mga variable na ito ay kunin from some storage
 
 var patientLocations = [
@@ -20,7 +24,8 @@ var patientLocations = [
 function initMap() {
     map = new google.maps.Map(document.getElementById("map"), {
         center: myLatLng,
-        zoom: myZoom
+        zoom: myZoom,
+        clickableIcons: false
     });
 
     const hullLocations = convexHull(patientLocations);
@@ -34,11 +39,12 @@ function initMap() {
             map,
         });
         addMarkerEvents(marker, patientLocations[i].id);
+        counter++;
     }
     console.log(patientLocations);
 }
+
 function addMarkerEvents(marker, id){
-    //remove the marker if it was clicked and rmeove mode is on
     marker.addListener("click", () => {
         if(removeMode){
             const position = patientLocations.findIndex(x => x.id == id);
@@ -49,11 +55,6 @@ function addMarkerEvents(marker, id){
         }
     });
 
-    //This event will trigger once user drags a marker
-    //1. get index of the marker in the array by using the id
-    //2. replace that lat and lng values in the specified position in the array
-    //3. get hull points of the updated array that we just changed
-    //4. set the existing polygon path to the new hull points we just created 
     google.maps.event.addListener(marker, 'dragend', function() {
         const position = patientLocations.findIndex(x => x.id == id);
         patientLocations[position].lat = marker.getPosition().lat();
@@ -71,33 +72,31 @@ function drawHull(points) {
         strokeWeight: 2,
         fillColor: "#FF0000",
         fillOpacity: 0.35,
+        clickable: false,
     });
     const area = google.maps.geometry.spherical.computeArea(polygon.getPath()); // pang compute ng area ng hull
     console.log(area);
     polygon.setMap(map);
 }
 
-//this calculates the determinant vectors from the given points
-//a positive result means that point c lies to the left of the line created by point a and b
-//use logical operator > and compare it to zero to return a boolean
 function isLeft(a, b, c){
     return result = ((b.lng - a.lng) * (c.lat - a.lat) - (b.lat - a.lat) * (c.lng - a.lng)) > 0;
 }
 
 function convexHull(coordinates){
     const points = coordinates;
-    points.sort((a,b) => a.lng - b.lng);    //get the left most point by sorting the given coordinates
-    var start = points[0];                  //the first coordinate after sorting is the left most which is definitely a part of the hull
-    var result = [];                        //result[] will store the convex hull points
+    points.sort((a,b) => a.lng - b.lng);
+    var start = points[0];
+    var result = [];
     var i = 0;
 
     do {
-        result[i] = start;                  //store the leftmost point in the result[], also, this is the current point that we are checking
-        var current = result[0];            //intially, we set current to leftmost point, this will change later
+        result[i] = start;
+        var current = result[0];
         var j;
-        for(j = 0; j < points.length; j++){                             //loop through all the patient location points
-            var checkLeft = isLeft(result[i], current, points[j]);      //check the location point if it is to the left of the line
-            if((current == start) || checkLeft){                        //nasa wikipedia tong algorithm na to hahahaha
+        for(j = 0; j < points.length; j++){
+            var checkLeft = isLeft(result[i], current, points[j]);
+            if((current == start) || checkLeft){
                 current = points[j];
             }
         }
@@ -122,7 +121,32 @@ function goToArea(){
 }
 
 function addMarker(){
+    if(addMode){
+        addMode = false;
+        document.getElementById("message").innerHTML = "";
+        google.maps.event.removeListener(addMarkerEvent);
+        return;
+    }
+    addMode = true;
+    removeMode = false;
+    document.getElementById("message").innerHTML = "You are in Add Mode. Click 'add' to exit";
 
+    addMarkerEvent = map.addListener("click", (mapsMouseEvent) =>{
+        const marker = new google.maps.Marker({
+            position: mapsMouseEvent.latLng,
+            draggable: true,
+            map,
+        });
+        counter++
+        patientLocations.push({
+            id: counter, 
+            lat: mapsMouseEvent.latLng.lat(),
+            lng: mapsMouseEvent.latLng.lng()
+        });
+        addMarkerEvents(marker,counter);
+        const newHull = convexHull(patientLocations);
+        polygon.setPath(newHull);
+    });
 }
 
 function removeMarker(){
@@ -132,5 +156,6 @@ function removeMarker(){
         return;
     }
     removeMode = true;
-    document.getElementById("message").innerHTML = "You are in Remove Mode. Click 'remove' again to exit";
+    google.maps.event.removeListener(addMarkerEvent);
+    document.getElementById("message").innerHTML = "You are in Remove Mode. Click 'remove' to exit";
 }

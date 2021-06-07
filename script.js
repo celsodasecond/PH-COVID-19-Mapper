@@ -1,13 +1,12 @@
 var map;
-var myLatLng = { lat: 14.697580, lng: 121.089948};
-var myZoom = 18;
 var removeMode = false;
 var addMode = false;
 var counter = 0; //will serve as id for newly created markers
 var addMarkerEvent;
 
-// dapat itong mga variable na ito ay kunin from some storage
-
+// dapat itong mga variable na ito ay kunin from some storage:
+var myLatLng = { lat: 14.697580, lng: 121.089948};
+var myZoom = 18;
 var patientLocations = [];
 
 function initMap() {

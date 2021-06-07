@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>PH Covid-19 Mapper</title>
+	<link rel="stylesheet" href="style.css">
+	<link rel="index icon" href="images/virus.ico"/>
+	<script
+	src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBvacBWJA_KAjf2OequEv3P4C-kNF_eFAw&callback=initMap&libraries=&v=weekly&libraries=geometry"
+	defer
+	></script>
+	<script src="script.js"></script>
+</head>
+<body>
+	<div class="container">
+		<div class="navbar">
+			<a href="index.html">
+				<img src="images/pup-resized.png" class="logo"">
+				<nav>
+			</a>
+				<ul id="menuList">
+					<li><a href="mapper.html">Mapper</a></li>
+					<li><a href="">User Tutorial</a></li>
+					<li><a href="aboutUs.html">About us</a></li>
+				</ul>
+			</nav>
+			<img src="images/menu.png" class="menu-icon" onclick="togglemenu()">
+		</div>
+
+		<!--simple div to display message to user-->
+		<div id="message"></div>
+
+		<div id="map"></div>
+
+		<!--this is where we put our options, add marker remove etc etc-->
+		<div id="options" class="options">
+			<button type="button" id="set-area-button" class="mapperbutton" onclick="setArea()">
+				Set Area
+			</button>
+			<button type="button" id="go-to-area-button" class="mapperbutton" onclick="goToArea()">
+				Go to Area
+			</button>
+			<button type="button" id="add-marker-button" class="mapperbutton" onclick="addMarker()">
+				Add
+			</button>
+			<button type="button" id="remove-marker-button" class="mapperbutton" onclick="removeMarker()">
+				Remove
+			</button>
+		</div>
+	</div>
+
+	<script>
+		
+		var menuList = document.getElementById("menuList");
+
+		menuList.style.maxHeight = "0px";
+
+		function togglemenu(){
+
+			if(menuList.style.maxHeight == "0px"){
+				menuList.style.maxHeight = "130px";
+			}
+			else{
+				menuList.style.maxHeight = "0px";
+			}
+
+		}
+
+	</script>
+</body>
+</html>

@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Spatial Mapper - About Us</title>
+	<link rel="stylesheet" href="style.css">
+	<link rel="index icon" href="images/virus.ico"/>
+</head>
+
+<body>
+	<div class="container">
+		<div class="navbar">
+			<a href="index.html">
+				<img src="images/pup-resized.png" class="logo"">
+				<nav>
+			</a>
+				<ul id="menuList">
+					<li><a href="mapper.html">Mapper</a></li>
+					<li><a href="">User Tutorial</a></li>
+					<li><a href="aboutUs.html">About us</a></li>
+				</ul>
+			</nav>
+			<img src="images/menu.png" class="menu-icon" onclick="togglemenu()">
+		</div>
+
+		<div class="about-section">
+  			<h1>About Us</h1>
+  			<p>We are bonafide students from the Polytechnic University of the Philippines - Mabini Campus.</p>
+  			<p>This website application is a collaborative project for the people and for the nation.</p>
+		</div>
+		
+		<h2 style="text-align:center" class = "ourteam">Our Team</h2>
+
+		<div class="abtusrow">
+			<div class="abtuscolumn">
+				<div class="card">
+					<img src="images/txabi.png" alt="Txabi" style="width: 100%;">
+					<div class="abtuscontainer">
+						<h2>Txabi Guerrero</h2>
+						<p class="abtustitle">Bachelor of Science in Computer Science</p>
+						<p>taguerrero@iskolarngbayan.pup.edu.ph</p>
+					</div>
+				</div>
+			</div>
+
+			<div class="abtuscolumn">
+				<div class="card">
+					<img src="images/celso.png" alt="Celso" style="width: 100%;">
+					<div class="abtuscontainer">
+						<h2>Celso Del Castillo II</h2>
+						<p class="abtustitle">Bachelor of Science in Computer Science</p>
+						<p>cadelcastilloii@iskolarngbayan.pup.edu.ph</p>
+					</div>
+				</div>
+			</div>
+
+			<div class="abtuscolumn">
+				<div class="card">
+					<img src="images/whil.png" alt="Whilburt" style="width: 100%;">
+					<div class="abtuscontainer">
+						<h2>Whilburt Delos Santos</h2>
+						<p class="abtustitle">Bachelor of Science in Computer Science</p>
+						<p>wadelossantos@iskolarngbayan.pup.edu.ph</p>
+					</div>
+				</div>
+			</div>
+
+			<div class="abtuscolumn">
+				<div class="card">
+					<img src="images/ian.png" alt="Txabi" style="width: 100%;">
+					<div class="abtuscontainer">
+						<h2>Christian Lagrana</h2>
+						<p class="abtustitle">Bachelor of Science in Computer Science</p>
+						<p>cqlagrana@iskolarngbayan.pup.edu.ph</p>
+					</div>
+				</div>
+
+		<div class="social-links">
+			<img src="images/fb.png">
+			<img src="images/tw.png">
+		</div>
+
+			</div>
+		</div>
+
+	</div>
+
+
+	<script>
+		
+		var menuList = document.getElementById("menuList");
+
+		menuList.style.maxHeight = "0px";
+
+		function togglemenu(){
+
+			if(menuList.style.maxHeight == "0px"){
+				menuList.style.maxHeight = "130px";
+			}
+			else{
+				menuList.style.maxHeight = "0px";
+			}
+
+		}
+
+	</script>
+
+</body>
+</html>

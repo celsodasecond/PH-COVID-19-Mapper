@@ -7,7 +7,18 @@ var addMarkerEvent;
 // dapat itong mga variable na ito ay kunin from some storage:
 var myLatLng = { lat: 14.697580, lng: 121.089948};
 var myZoom = 18;
-var patientLocations = [];
+var patientLocations = [
+    {id: 1, lat: 14.697017, lng: 121.088796},
+    {id: 2, lat: 14.697387, lng: 121.088833},
+    {id: 3, lat: 14.697466, lng: 121.089262},
+    {id: 4, lat: 14.696853, lng: 121.089793},
+    {id: 5, lat: 14.697095, lng: 121.088123},
+    {id: 6, lat: 14.69758, lng: 121.089948},
+    {id: 7, lat: 14.696770995311615, lng: 121.0894509851164},
+    {id: 8, lat: 14.696453261995734, lng: 121.0892525843236},
+    {id: 9, lat: 14.696811993882754, lng: 121.08935561739372},
+    {id: 10, lat: 14.695496, lng: 121.089083}
+];
 
 function initMap() {
     map = new google.maps.Map(document.getElementById("map"), {
@@ -21,18 +32,17 @@ function initMap() {
 
     var i;
     for(i = 0; i < patientLocations.length; i++){
-        const marker = new google.maps.Marker({
-            position: patientLocations[i],
-            draggable: true,
-            map,
-        });
-        addMarkerEvents(marker, patientLocations[i].id);
-        counter++;
+        createMarker(patientLocations[i], patientLocations[i].id);
     }
-    console.log(patientLocations);
 }
 
-function addMarkerEvents(marker, id){
+function createMarker(position, id){
+    const marker = new google.maps.Marker({
+        position: position,
+        draggable: true,
+        map,
+    });
+    counter++;
     marker.addListener("click", () => {
         if(removeMode){
             const position = patientLocations.findIndex(x => x.id == id);
@@ -42,7 +52,6 @@ function addMarkerEvents(marker, id){
             polygon.setPath(newHull);
         }
     });
-
     google.maps.event.addListener(marker, 'dragend', function() {
         const position = patientLocations.findIndex(x => x.id == id);
         patientLocations[position].lat = marker.getPosition().lat();
@@ -120,18 +129,8 @@ function addMarker(){
     document.getElementById("message").innerHTML = "You are in Add Mode. Click 'add' to exit";
 
     addMarkerEvent = map.addListener("click", (mapsMouseEvent) =>{
-        const marker = new google.maps.Marker({
-            position: mapsMouseEvent.latLng,
-            draggable: true,
-            map,
-        });
-        counter++
-        patientLocations.push({
-            id: counter, 
-            lat: mapsMouseEvent.latLng.lat(),
-            lng: mapsMouseEvent.latLng.lng()
-        });
-        addMarkerEvents(marker,counter);
+        createMarker(mapsMouseEvent.latLng, counter);
+        patientLocations.push({id: counter, lat: mapsMouseEvent.latLng.lat(), lng: mapsMouseEvent.latLng.lng()});
         const newHull = convexHull(patientLocations);
         polygon.setPath(newHull);
     });

@@ -45,9 +45,9 @@ function createMarker(position, id){
         draggable: true,
         map,
     });
-    //insert code here to get full adress from lat lng
     const markerLat = marker.getPosition().lat();
     const markerLng = marker.getPosition().lng();
+    //insert code here to get full adress from lat lng
     const address = "address";
 
     const infowindow = new google.maps.InfoWindow({

@@ -15,7 +15,7 @@
 	<div class="container">
 		<div class="navbar">
 			<a href="index.html">
-				<img src="images/pup-resized.png" class="logo"">
+				<img src="images/pup-resized.png" class="logo">
 				<nav>
 			</a>
 				<ul id="menuList">
@@ -28,7 +28,8 @@
 		</div>
 
 		<!--simple div to display message to user-->
-		<div id="message"></div>
+		<div id="message">
+		</div>
 
 		<div id="map"></div>
 
@@ -40,10 +41,10 @@
 			<button type="button" id="go-to-area-button" class="mapperbutton" onclick="goToArea()">
 				Go to Area
 			</button>
-			<button type="button" id="add-marker-button" class="mapperbutton" onclick="addMarker()">
+			<button type="button" id="add-marker-button" class="mapperbutton" onclick="showHide(); addMarker()">
 				Add
 			</button>
-			<button type="button" id="remove-marker-button" class="mapperbutton" onclick="removeMarker()">
+			<button type="button" id="remove-marker-button" class="mapperbutton" onclick="showHide(); removeMarker()">
 				Remove
 			</button>
 		</div>

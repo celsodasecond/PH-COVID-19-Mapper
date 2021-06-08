@@ -45,6 +45,10 @@ function createMarker(position, id){
         draggable: true,
         map,
     });
+    const infowindow = new google.maps.InfoWindow({
+        content: String(id),
+        //we can add more information here such as full address
+    });
     marker.addListener("click", () => {
         if(removeMode){
             const position = patientLocations.findIndex(x => x.id == id);
@@ -53,6 +57,7 @@ function createMarker(position, id){
             const newHull = convexHull(patientLocations);
             polygon.setPath(newHull);
         }
+        infowindow.open(marker.get("map"), marker);
     });
     google.maps.event.addListener(marker, 'dragend', function() {
         const position = patientLocations.findIndex(x => x.id == id);

@@ -31,6 +31,18 @@ function initMap() {
     drawHull(hullLocations);
 
     var i;
+    /*  WORKING BLOCK, COMMENTED OUT FOR TESTING PURPOSES
+    for(i = 0; i < patientLocations.length; i++){
+        const marker = new google.maps.Marker({
+            position: patientLocations[i],
+            draggable: true,
+            map,
+        });
+        addMarkerEvents(marker, patientLocations[i].id);
+        counter++;
+    }
+    console.log(patientLocations); */
+
     for(i = 0; i < patientLocations.length; i++){
         createMarker(patientLocations[i], patientLocations[i].id);
     }
@@ -43,6 +55,7 @@ function createMarker(position, id){
         draggable: true,
         map,
     });
+    counter++;
     marker.addListener("click", () => {
         if(removeMode){
             const position = patientLocations.findIndex(x => x.id == id);
@@ -59,7 +72,26 @@ function createMarker(position, id){
         const newHull = convexHull(patientLocations);
         polygon.setPath(newHull);
     });
-    counter++;
+}
+
+function addMarkerEvents(marker, id){
+    marker.addListener("click", () => {
+        if(removeMode){
+            const position = patientLocations.findIndex(x => x.id == id);
+            patientLocations.splice(position, 1);
+            marker.setMap(null);
+            const newHull = convexHull(patientLocations);
+            polygon.setPath(newHull);
+        }
+    });
+
+    google.maps.event.addListener(marker, 'dragend', function() {
+        const position = patientLocations.findIndex(x => x.id == id);
+        patientLocations[position].lat = marker.getPosition().lat();
+        patientLocations[position].lng = marker.getPosition().lng(); 
+        const newHull = convexHull(patientLocations);
+        polygon.setPath(newHull);
+    });
 }
 
 function drawHull(points) {
@@ -119,19 +151,38 @@ function goToArea(){
 }
 
 function addMarker(){
-    var messageStyle = document.querySelector("#message");
     if(addMode){
         addMode = false;
-        messageStyle.style.display = "none";
+        document.querySelector("#message").style.display = "none";
         google.maps.event.removeListener(addMarkerEvent);
         return;
     }
     addMode = true;
     removeMode = false;
-    
+    document.querySelector("#message").style.display = "block";
     document.getElementById("message").innerHTML = "You are in Add Mode. Click 'Add' again to exit";
+
+    /*  WORKING BLOCK, COMMENTED OUT FOR TESTING PURPOSES
     addMarkerEvent = map.addListener("click", (mapsMouseEvent) =>{
-        createMarker(mapsMouseEvent.latLng, counter+1);
+        const marker = new google.maps.Marker({
+            position: mapsMouseEvent.latLng,
+            draggable: true,
+            map,
+        });
+        counter++
+        patientLocations.push({
+            id: counter, 
+            lat: mapsMouseEvent.latLng.lat(),
+            lng: mapsMouseEvent.latLng.lng()
+        });
+        addMarkerEvents(marker,counter);
+        const newHull = convexHull(patientLocations);
+        polygon.setPath(newHull);
+    });
+    */
+
+    addMarkerEvent = map.addListener("click", (mapsMouseEvent) =>{
+        createMarker(mapsMouseEvent.latLng, counter);
         patientLocations.push({id: counter, lat: mapsMouseEvent.latLng.lat(), lng: mapsMouseEvent.latLng.lng()});
         const newHull = convexHull(patientLocations);
         polygon.setPath(newHull);
@@ -139,25 +190,14 @@ function addMarker(){
 }
 
 function removeMarker(){
-    var messageStyle = document.querySelector("#message");
     if(removeMode){
         removeMode = false;
-        messageStyle.style.display = "none";
-        document.getElementById("message").innerHTML = "SUCCESS";
+        document.querySelector("#message").style.display = "none";
         return;
     }
     removeMode = true;
     addMode = false;
     google.maps.event.removeListener(addMarkerEvent);
+    document.querySelector("#message").style.display = "block";
     document.getElementById("message").innerHTML = "You are in Remove Mode. Click 'Remove' again to exit";
-}
-
-
-function showHide(){
-    let messageStyle = document.querySelector("#message");
-    
-    if(messageStyle.style.display = "none") {
-        messageStyle.style.display = "block";
-    }
-
 }

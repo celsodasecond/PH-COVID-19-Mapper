@@ -205,29 +205,53 @@ nav ul li a:hover{
 }
 
 /* MAPPER SECTION */
-body{
-    font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
 
 #map{
     height: 600px;
     width: 100%;
 }
 
+.options{
+	display: flex;
+	justify-content: space-around;
+}
+
 .mapperbutton{
-  	width: 140px;
-  	margin-top: 10px;
-  	margin-right: 5px;
-		border: 0;
-		padding: 12px 10px;
-		outline: none;
-		color: #fff;
-		background: linear-gradient(to right, #a71d31, #3f0d12);
-		border-radius: 6px;
-		cursor: pointer;
-		font-size: 14px;
-		font-family: Arial, sans-serif;
-  }
+	width: 100%;
+	border: 1px solid #3f0d12;
+	border-radius: 10px;
+	background: none;
+	padding: 10px 20px;
+	font-size: 20px;
+	font-family: 'Montserrat';
+	cursor: pointer;
+	margin: 10px;
+	color: #3f0d12;
+	transition: 0.5s;
+	position: relative;
+	overflow: hidden;
+}
+
+.mapperbutton:hover{
+	color: #fff;
+}
+
+.mapperbutton::before{
+	content: "";
+	position: absolute;
+	left: 0;
+	width: 100%;
+	height: 0%;
+	background: #3f0d12;
+	z-index: -1;
+	transition: 0.5s;
+	top: 0;
+	border-radius: 0 0 50% 50%;
+}
+
+.mapperbutton:hover::before{
+	height: 180%;
+}
 
 #message {
 	padding: 14px;
@@ -236,7 +260,7 @@ body{
   margin-bottom: 8px;
   display: none;
   border-radius: 30px;
-  animation: fadeIn 2.5s;
+  animation: fadeIn 1.5s;
 }
 
 @media only screen and (max-width:700px) {

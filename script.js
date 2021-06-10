@@ -24,27 +24,59 @@ var patientLocations = [
     {id: 12, lat: 14.699274119599599, lng: 121.08432489798015}
 ];
 
+//medyo mahaba haba tong function na to hahah
+//it pretty much does everything
+//
+//1. cinocompare nya bawat coordinate sa isat isa
+//2. titignan nya kung yung distance ng coordinates ay malapit lang
+//3. and kung yes, pagsamahin sa isang cluster
+//
+//gumagamit to ng disjoint set data structure
+//brute force to so umaabot ng O(n^2) yung time complexity
+//tas kung isasama pa yung time complexity ng union function (tignan nyo sa baba) which is O(a(n))
+//time complexity is equal to O(n^3)?? di ko sure pero its pretty big haha
 function cluster(points){
     var i;
     var result = [];
+    //set muna ng array na paglalagayn ng disjoint set structre
+    //to know more about disjoint set data structure search nyo na lang
+    //may three important functions ang disjoin set
+    //1. make set function
+    //2. find function
+    //3. union function
+    //ipapakita later kung pano sila gumagana
 
     for(i = 0; i < points.length; i++){
+        //dito pumapasok yung make set function 
+        //hanapin nyo yung newcluster() function for more explanation...
         var cluster = newCluster(points[i], i);
         result.push(cluster);
+        //yung binalik na object na may rank and parent ilagay sa result array
     }
 
+    //eto ung brute force method na icocompare nya lahat ng coordinates sa isa't isa
     for(i = 0; i < result.length; i++){
         var j;
         for(j = 0; j < result.length; j++){
             var length = Math.sqrt(Math.pow((result[j].lng - result[i].lng), 2) + Math.pow((result[j].lat - result[i].lat), 2));
+            //compute the length between two points
             if(length < 0.0007){
+                //compare to minimum length
+                //pag magkalapit ang dalawang points
+                //gamitin ang union function
+                //hanapin nyo yung union() function for more explanation...
                 union(result[i], result[j]);
             }
         }
     }
-
+    //so after ng brute force at lahat ng magkalapit na coordinates are dumaan na sa union() function...
+    //kunin lahat ng unique parent.rank tas ilagay sa isa array
+    //para syang unique identifier ng isang cluster
     const clusterId = [... new Set(result.map(x => x.parent.rank))];
     
+    //ngayong may listahan na tayo ng mga cluster id (parent.rank)
+    //kunin lahat ng coordinates na na may cluster id na yon
+    //gawan ng convex hull and polygon and yun na yun!!!
     for(i = 0; i <clusterId.length; i++){
         var clusterPoints = result.filter(function(point){
             return point.parent.rank == clusterId[i];
@@ -52,7 +84,6 @@ function cluster(points){
         const newHull = convexHull(clusterPoints);
         drawHull(newHull);
     }
-
     drawPolygons();
 
     for(i = 0; i <result.length; i++){
@@ -60,6 +91,12 @@ function cluster(points){
     }
 }
 
+//...dito sa new cluster function
+//kinukuha nya lang din yung original data ng array
+//yung id ng coordinate
+//yung lat at lng
+//pero binabalik nya with a rank property and parent property which is essential for this disjoint eme na to
+//yung parent.rank ang magsisilbing unique identifier ng isang cluster
 function newCluster(point, rankNum){
     var set = {
         rank: rankNum,
@@ -68,20 +105,31 @@ function newCluster(point, rankNum){
         lng: point.lng
     }
     set.parent = set;
+    //so sa una iset muna yung parent sa sarili nya
     return set;
+    //then back to cluster function....
 }
 
+//hahanapin neto yung pinakaparent ng
 function find(point){
+    //titigil lang sa paghahanap tong function na to pag yung parent ng parent ay same, meaning yun na yung root
     if (point.parent !== point){
       point.parent = find(point.parent);
+      //observe the recursion
     }
     return point.parent;
 }
 
+//dito sa union tatanggap sya ng 2 objects
+//tas hahanapin yung parent ng pinaka-root nila using find function
 function union(point1, point2){
     var root1 = find(point1);
     var root2 = find(point2);
+    //tignan nyo yung find function sa taas
 
+    //kung pareho naman ang root ng dalawang coordinates edi meaning nasa iisang cluster lang sila
+    //kung hindi pareho, edi iset ang parent of point1 equals to parent of point2
+    //so mangyayare, pareho na sila ng parent, therefore nasa iisang cluster na sila
     if(root1 !== root2){
         if(root1.rank < root2.rank){
             root1.parent = root2;

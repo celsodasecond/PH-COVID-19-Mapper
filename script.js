@@ -9,16 +9,24 @@ var polygonArray = [];
 var myLatLng = { lat: 14.697580, lng: 121.089948};
 var myZoom = 18;
 var patientLocations = [
-    {id: 16, lat: 14.697481373217192, lng: 121.08910015702914},
-    {id: 14, lat: 14.697629993932933, lng: 121.09001939429272},
-    {id: 12, lat: 14.699274119599599, lng: 121.08432489798015},
-    {id: 11, lat: 14.69663596066175, lng: 121.07586517833766},
-    {id: 10, lat: 14.69765868666433, lng: 121.08811872932452},
-    {id: 9, lat: 14.697401350036053, lng: 121.08852380117014},
-    {id: 8, lat: 14.696965329720458, lng: 121.08780352986638},
-    {id: 3, lat: 14.697056014378106, lng: 121.08988188790549},
-    {id: 2, lat: 14.698063477134651, lng: 121.08976548165285},
-    {id: 1, lat: 14.696756466040048, lng: 121.08862116119414},
+    {id: 4, lat: 14.696836905199396, lng: 121.08990540524388},
+    {id: 3, lat: 14.697044003785694, lng: 121.08903818030394},
+    {id: 6, lat: 14.698455087777315, lng: 121.0890975078075},
+    {id: 7, lat: 14.69846533740118, lng: 121.08870014355143},
+    {id: 8, lat: 14.697932357114198, lng: 121.08841933939966},
+    {id: 10, lat: 14.69630265943562, lng: 121.08977567629718},
+    {id: 13, lat: 14.69704063681295, lng: 121.08973329087912},
+    {id: 14, lat: 14.696758770697233, lng: 121.09109492613807},
+    {id: 15, lat: 14.696312909477232, lng: 121.09138102832385},
+    {id: 16, lat: 14.696799256445125, lng: 121.09146632924985},
+    {id: 18, lat: 14.697253218018657, lng: 121.09107655960314},
+    {id: 19, lat: 14.696920103702594, lng: 121.08853342764404},
+    {id: 20, lat: 14.697237842943151, lng: 121.08875595153903},
+    {id: 21, lat: 14.69659146737734, lng: 121.09185894526271},
+    {id: 22, lat: 14.697120735826479, lng: 121.0916896679806},
+    {id: 23, lat: 14.696666564027558, lng: 121.09005911247087},
+    {id: 24, lat: 14.69713292516586, lng: 121.09023395291379},
+    {id: 25, lat: 14.697277544307225, lng: 121.08814922275646},
 ];
 patientLocations.sort((a,b) => b.id - a.id);
 var counter = patientLocations[0].id;
@@ -37,19 +45,17 @@ function cluster(points){
         for(j = 0; j < result.length; j++){
             var length = Math.sqrt(Math.pow((result[j].lng - result[i].lng), 2) + Math.pow((result[j].lat - result[i].lat), 2));
             if(length < 0.00065){
-                console.log("from: " + result[i].id + " to: " + result[j].id);
                 union(result[i], result[j]);
             }
         }
     }
-    console.log(result);
 
     const clusterId = [... new Set(result.map(x => x.parent.rank))];
-    console.log(clusterId);
     
     for(i = 0; i <clusterId.length; i++){
         var clusterPoints = result.filter(function(point){
-            return point.parent.rank == clusterId[i];
+            var root = find(point);
+            return root.rank == clusterId[i];
         });
         const newHull = convexHull(clusterPoints);
         createHullPolygon(newHull);
@@ -81,13 +87,11 @@ function union(point1, point2){
 
     if(root1 !== root2){
         if(root1.rank < root2.rank){
-            root2.parent = root1.parent;
-            console.log(root2.id + " is put into " + root1.parent.id);
+            root2.parent = root1;
         } else {
-            root1.parent = root1.parent;
-            console.log(root1.id + " is put into " + root2.parent.id);
-        }
-    }
+            root1.parent = root2;
+        } 
+    } 
 }
 
 function initMap() {

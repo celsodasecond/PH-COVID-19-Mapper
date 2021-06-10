@@ -42,7 +42,7 @@ function cluster(points){
 
     for(i = 0; i < result.length; i++){
         var j;
-        for(j = 0; j < result.length; j++){
+        for(j = 0; j < i; j++){
             var length = Math.sqrt(Math.pow((result[j].lng - result[i].lng), 2) + Math.pow((result[j].lat - result[i].lat), 2));
             if(length < 0.00065){
                 union(result[i], result[j]);

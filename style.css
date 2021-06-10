@@ -180,6 +180,10 @@ nav ul li a:hover{
 	text-align: center;
 }
 
+.container .about-section h1{
+	color: white;
+}
+
 .abtusContainer{
 	display: flex;
 	justify-content: center;

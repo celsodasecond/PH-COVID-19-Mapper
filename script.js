@@ -6,8 +6,10 @@ var messageStyle = document.getElementById("message");
 var polygonArray = [];
 
 // dapat itong mga variable na ito ay kunin from some storage:
-var myLatLng = { lat: 14.697580, lng: 121.089948};
-var myZoom = 18;
+var myLatLng = [
+    { lat: 14.697580, lng: 121.089948},
+];
+var myZoom = [18];
 var patientLocations = [
     {id: 4, lat: 14.696836905199396, lng: 121.08990540524388},
     {id: 3, lat: 14.697044003785694, lng: 121.08903818030394},
@@ -29,7 +31,24 @@ var patientLocations = [
     {id: 25, lat: 14.697277544307225, lng: 121.08814922275646},
 ];
 patientLocations.sort((a,b) => b.id - a.id);
-var counter = patientLocations[0].id;
+var counter = patientLocations[0].id
+
+function initMap() {
+    map = new google.maps.Map(document.getElementById("map"), {
+        center: myLatLng[0],
+        zoom: myZoom[0],
+        clickableIcons: false
+    });
+
+    var i;
+    for(i = 0; i < patientLocations.length; i++){
+        createMarker(patientLocations[i], patientLocations[i].id);
+    }
+
+    cluster(patientLocations);
+
+    createAreaDropdown();
+}
 
 function cluster(points){
     var i;
@@ -94,21 +113,6 @@ function union(point1, point2){
     } 
 }
 
-function initMap() {
-    map = new google.maps.Map(document.getElementById("map"), {
-        center: myLatLng,
-        zoom: myZoom,
-        clickableIcons: false
-    });
-
-    var i;
-    for(i = 0; i < patientLocations.length; i++){
-        createMarker(patientLocations[i], patientLocations[i].id);
-    }
-
-    cluster(patientLocations);
-}
-
 function createMarker(position, id){
     const marker = new google.maps.Marker({
         position: position,
@@ -157,7 +161,6 @@ function createHullPolygon(points) {
     polygonArray.push(polygon);
 }
 
-
 function drawPolygons() {
     var i;
     for(i = 0; i < polygonArray.length; i++){
@@ -172,7 +175,6 @@ function removePolygons() {
     }
     polygonArray = [];
 }
-
 
 function isLeft(a, b, c){
     return result = ((b.lng - a.lng) * (c.lat - a.lat) - (b.lat - a.lat) * (c.lng - a.lng)) > 0;
@@ -202,17 +204,46 @@ function convexHull(coordinates){
 }
 
 function setArea(){
-    myLatLng = map.getCenter(); 
-    myZoom = map.getZoom();
-    alert("Area Succesfully Changed");
+    myLatLng.push(map.getCenter());
+    myZoom.push(map.getZoom());
+    messageStyle.style.display = "block";
+    messageStyle.innerHTML = "Successfuly set new area";
+
+    createAreaDropdown()
 
     //add code to save  mylatlng to a storage
     //para pag niload ni user ang map ay maipapakita ang nakasave na location imbes na kung saan lang
 }
 
-function goToArea(){
-    map.panTo(myLatLng);
-    map.setZoom(myZoom);
+function goToArea(i){
+    map.panTo(myLatLng[i]);
+    map.setZoom(myZoom[i]);
+}
+
+function createAreaDropdown() {
+    var dropdown = document.getElementById("dropdown");
+    dropdown.innerHTML = "";
+    var i;
+    for(i = 0; i < myLatLng.length; i++){
+        var option = document.createElement("div");
+        var remove = document.createElement("div");
+        var onclick = "goToArea(" + i + ")";
+        var areaNum = i+1;
+        var text = document.createTextNode("Area " + areaNum);
+        var x = document.createTextNode("X");
+        var removeFunction = "removeArea(" + i + ")";
+
+        option.setAttribute("class", "dropdown-content");
+        option.setAttribute("onclick", onclick);
+        option.appendChild(text);
+
+        remove.setAttribute("class", "remove-area");
+        remove.setAttribute("onclick", removeFunction);
+        remove.appendChild(x);
+
+        dropdown.append(option);
+        dropdown.append(remove);
+    }
 }
 
 function addMarker(){

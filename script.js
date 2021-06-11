@@ -6,10 +6,9 @@ var messageStyle = document.getElementById("message");
 var polygonArray = [];
 
 // dapat itong mga variable na ito ay kunin from some storage:
-var myLatLng = [
-    { lat: 14.697580, lng: 121.089948},
-];
-var myZoom = [18];
+var myLatLng = [{
+    id: 1, lat: 14.696836905199396, lng: 121.08990540524388, zoom:2,
+}];
 var patientLocations = [
     {id: 4, lat: 14.696836905199396, lng: 121.08990540524388},
     {id: 3, lat: 14.697044003785694, lng: 121.08903818030394},
@@ -33,10 +32,18 @@ var patientLocations = [
 patientLocations.sort((a,b) => b.id - a.id);
 var counter = patientLocations[0].id
 
+//sort mylatlng and myzoom
+//get highest id
+//use highest id +1 for adding new areas
+
 function initMap() {
+    if(myLatLng.length===0){
+        myLatLng[0] = {id:1, lat: 13.402617513306232, lng: 11.26629498335257, zoom:2};
+    }
+
     map = new google.maps.Map(document.getElementById("map"), {
         center: myLatLng[0],
-        zoom: myZoom[0],
+        zoom: myLatLng[0].zoom,
         clickableIcons: false
     });
 
@@ -204,8 +211,17 @@ function convexHull(coordinates){
 }
 
 function setArea(){
-    myLatLng.push(map.getCenter());
-    myZoom.push(map.getZoom());
+    lat = map.getCenter().lat();
+    lng = map.getCenter().lng();
+    zoom = map.getZoom();
+    if(myLatLng.length === 0){
+        id = 1;
+    } else id = myLatLng[myLatLng.length-1].id + 1;
+
+    const newArea = {id: id, lat: lat, lng: lng, zoom: zoom};
+
+    myLatLng.push(newArea);
+
     messageStyle.style.display = "block";
     messageStyle.innerHTML = "Successfuly set new area";
 
@@ -217,33 +233,47 @@ function setArea(){
 
 function goToArea(i){
     map.panTo(myLatLng[i]);
-    map.setZoom(myZoom[i]);
+    map.setZoom(myLatLng[i].zoom);
+}
+
+function removeArea(a){
+    myLatLng.splice(a, 1);
+    createAreaDropdown();
 }
 
 function createAreaDropdown() {
     var dropdown = document.getElementById("dropdown");
     dropdown.innerHTML = "";
+
     var i;
     for(i = 0; i < myLatLng.length; i++){
         var option = document.createElement("div");
         var remove = document.createElement("div");
         var onclick = "goToArea(" + i + ")";
-        var areaNum = i+1;
-        var text = document.createTextNode("Area " + areaNum);
-        var x = document.createTextNode("X");
         var removeFunction = "removeArea(" + i + ")";
+        var areaNum = myLatLng[i].id;
+        var areaText = document.createTextNode("Area " + areaNum);
+        var removeFunctionText = document.createTextNode("X");
 
         option.setAttribute("class", "dropdown-content");
         option.setAttribute("onclick", onclick);
-        option.appendChild(text);
+        option.appendChild(areaText);
 
-        remove.setAttribute("class", "remove-area");
+        remove.setAttribute("class", "remove-area-button");
         remove.setAttribute("onclick", removeFunction);
-        remove.appendChild(x);
+        remove.appendChild(removeFunctionText);
 
         dropdown.append(option);
         dropdown.append(remove);
     }
+    var insert = document.createElement("div");
+    var insertFunctionText = document.createTextNode("+ New Area");
+    
+    insert.setAttribute("class", "insert-area-button");
+    insert.setAttribute("onclick", "setArea()");
+    insert.appendChild(insertFunctionText);
+
+    dropdown.append(insert);
 }
 
 function addMarker(){

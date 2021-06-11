@@ -27,27 +27,35 @@
 			<img src="images/menu.png" class="menu-icon" onclick="togglemenu()">
 		</div>
 
-		<!--simple div to display message to user-->
 		<div id="message">
 		</div>
 
-		<div id="map"></div>
-
-		<!--this is where we put our options, add marker remove etc etc-->
 		<div id="options" class="options">
-			<button type="button" id="set-area-button" class="mapperbutton" onclick="setArea()">
-				Set Area
-			</button>
-			<button type="button" id="go-to-area-button" class="mapperbutton" onclick="goToArea()">
-				Go to Area
-			</button>
-			<button type="button" id="add-marker-button" class="mapperbutton" onclick="addMarker()">
-				Add
-			</button>
+			<div class="button-container">
+				<button type="button" id="set-area-button" class="mapperbutton" onclick="setArea()">
+					Set Area
+				</button>
+			</div>
+			<div class="button-container go-to-area-button">
+				<button type="button" id="go-to-area-button" class="mapperbutton">
+					Go to Area
+				</button>
+				<div id="dropdown" class="dropdown">
+				</div>
+			</div>
+			<div class="button-container">
+				<button type="button" id="add-marker-button" class="mapperbutton" onclick="addMarker()">
+					Add
+				</button>
+			</div>
+			<div class="button-container">
 			<button type="button" id="remove-marker-button" class="mapperbutton" onclick="removeMarker()">
 				Remove
 			</button>
+			</div>
 		</div>
+
+		<div id="map"></div>
 	</div>
 
 	<script>

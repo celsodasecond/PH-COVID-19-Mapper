@@ -311,6 +311,7 @@ function createAreaDropdown() {
 }
 
 function addMarker(){
+    search();
     if(addMode){
         addMode = false;
         messageStyle.style.display = "none";

@@ -6,9 +6,7 @@ var messageStyle = document.getElementById("message");
 var polygonArray = [];
 
 // dapat itong mga variable na ito ay kunin from some storage:
-var myLatLng = [{
-    id: 1, lat: 14.696836905199396, lng: 121.08990540524388, zoom:2,
-}];
+var myLatLng = [];
 var patientLocations = [
     {id: 4, lat: 14.696836905199396, lng: 121.08990540524388},
     {id: 3, lat: 14.697044003785694, lng: 121.08903818030394},
@@ -32,14 +30,10 @@ var patientLocations = [
 patientLocations.sort((a,b) => b.id - a.id);
 var counter = patientLocations[0].id
 
-//sort mylatlng and myzoom
-//get highest id
-//use highest id +1 for adding new areas
-
 function initMap() {
-    if(myLatLng.length===0){
-        myLatLng[0] = {id:1, lat: 13.402617513306232, lng: 11.26629498335257, zoom:2};
-    }
+    geocoder = new google.maps.Geocoder();
+
+    if(myLatLng.length===0){ myLatLng[0] = {id:1, lat: 14.576368776100365, lng: 121.02620400481982, zoom:11};}
 
     map = new google.maps.Map(document.getElementById("map"), {
         center: myLatLng[0],
@@ -120,21 +114,31 @@ function union(point1, point2){
     } 
 }
 
+function displayAddress(marker){
+    const infowindow = new google.maps.InfoWindow({
+
+    });
+
+    geocoder.geocode({
+        latLng: marker.getPosition()
+    }, function(responses) {
+        if (responses && responses.length > 0) {
+          infowindow.setContent(responses[0].formatted_address);
+        } else {
+          infowindow.setContent('Cannot determine address at this location.');
+        }
+    });
+
+    infowindow.open(marker.get("map"), marker);
+}
+
 function createMarker(position, id){
     const marker = new google.maps.Marker({
         position: position,
         draggable: true,
         map,
     });
-    const markerLat = marker.getPosition().lat();
-    const markerLng = marker.getPosition().lng();
-    //insert code here to get full adress from lat lng
-    const address = "address";
 
-    const infowindow = new google.maps.InfoWindow({
-        content: "id:" + String(id)
-        //we can add more information here such as full address
-    });
     marker.addListener("click", () => {
         if(removeMode){
             const position = patientLocations.findIndex(x => x.id == id);
@@ -142,8 +146,10 @@ function createMarker(position, id){
             marker.setMap(null);
             removePolygons();
             cluster(patientLocations);
+        } else {
+            displayAddress(marker);
         }
-        infowindow.open(marker.get("map"), marker);
+        
     });
     google.maps.event.addListener(marker, 'dragend', function() {
         const position = patientLocations.findIndex(x => x.id == id);

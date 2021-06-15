@@ -356,7 +356,7 @@ padding: 14px;
 	background: #fff;
 	display: none;
 	align-items: center;
-	justify-content: center;
+	justify-content: left;
 	margin-bottom: 10px;
 	animation: fadeIn 1.5s;
 }
@@ -364,7 +364,7 @@ padding: 14px;
 #searchInput{
 	border-radius: 55px;
 	padding: 12px;
-	width: 800px;
+	width: 100%;
 	background: #f0f3ff;
 	display: flex;
 	align-items: center;

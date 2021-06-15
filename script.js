@@ -1,9 +1,9 @@
 var map;
 var removeMode = false;
 var addMode = false;
-var searchMode = false;
 var addMarkerEvent;
 var messageStyle = document.getElementById("message");
+var searchBox = document.getElementById("search-button");
 var polygonArray = [];
 
 // dapat itong mga variable na ito ay kunin from some storage:
@@ -311,10 +311,10 @@ function createAreaDropdown() {
 }
 
 function addMarker(){
-    search();
     if(addMode){
         addMode = false;
         messageStyle.style.display = "none";
+        searchBox.style.display = "none";
         google.maps.event.removeListener(addMarkerEvent);
         return;
     }
@@ -322,6 +322,7 @@ function addMarker(){
     removeMode = false;
     
     messageStyle.style.display = "block";
+    searchBox.style.display = "flex";
     messageStyle.innerHTML = "You are in Add Mode. Click 'Add' again to exit";
     addMarkerEvent = map.addListener("click", (mapsMouseEvent) =>{
         counter++;
@@ -344,17 +345,4 @@ function removeMarker(){
 
     messageStyle.style.display = "block";
     messageStyle.innerHTML = "You are in Remove Mode. Click 'Remove' again to exit";
-}
-
-function search(){
-    var searchBox = document.getElementById("search-button");
-
-    if(searchMode){
-        searchMode = false;
-        searchBox.style.display = "none";
-        return;
-    }
-
-    searchMode = true;
-    searchBox.style.display = "flex";
 }

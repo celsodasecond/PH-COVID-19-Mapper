@@ -354,11 +354,14 @@ padding: 14px;
 #searchInput {
 	background-color: #FFF;
       padding: 0 11px 0 13px;
-      width: 400px;
-	  font-size: 15px;
+      width: 500px;
+	  font-size: 25px;
+	  font-weight: 400;
+	  font-family: 'Roboto', sans-serif;
       text-overflow: ellipsis;
-	  border-width: 2px;
-	  margin-top: 10px;
+	  border-width: 1.5px;
+	  margin-top: 14px;
+	  border-style: outset;
 }
 
 

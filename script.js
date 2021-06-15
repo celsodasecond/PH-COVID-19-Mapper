@@ -343,6 +343,7 @@ function removeMarker(){
     addMode = false;
     google.maps.event.removeListener(addMarkerEvent);
 
+    document.getElementById("search-button").style.display = "none";
     messageStyle.style.display = "block";
     messageStyle.innerHTML = "You are in Remove Mode. Click 'Remove' again to exit";
 }

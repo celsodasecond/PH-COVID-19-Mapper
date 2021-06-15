@@ -61,10 +61,11 @@ function initMap() {
             map.setCenter(place.geometry.location);
             map.setZoom(17);
         }
-
+        console.log(place.geometry.location.lat());
         counter++;
         createMarker(place.geometry.location, counter);
         patientLocations.push({id: counter, lat: place.geometry.location.lat(), lng: place.geometry.location.lng()});
+        removePolygons();
         cluster(patientLocations);
     });
 
@@ -172,6 +173,7 @@ function createMarker(position, id){
             const position = patientLocations.findIndex(x => x.id == id);
             patientLocations.splice(position, 1);
             marker.setMap(null);
+            removePolygons();
             cluster(patientLocations);
         } else {
             displayAddress(marker);
@@ -201,7 +203,6 @@ function createHullPolygon(points) {
 }
 
 function drawPolygons() {
-    removePolygons();
     var i;
     for(i = 0; i < polygonArray.length; i++){
         polygonArray[i].setMap(map);
@@ -325,6 +326,7 @@ function addMarker(){
         counter++;
         createMarker(mapsMouseEvent.latLng, counter);
         patientLocations.push({id: counter, lat: mapsMouseEvent.latLng.lat(), lng: mapsMouseEvent.latLng.lng()});
+        removePolygons();
         cluster(patientLocations);
     });
 }

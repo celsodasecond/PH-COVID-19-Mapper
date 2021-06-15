@@ -1,6 +1,7 @@
 var map;
 var removeMode = false;
 var addMode = false;
+var searchMode = false;
 var addMarkerEvent;
 var messageStyle = document.getElementById("message");
 var polygonArray = [];
@@ -42,7 +43,6 @@ function initMap() {
     });
 
     var input = document.getElementById('searchInput');
-    map.controls[google.maps.ControlPosition.TOP_LEFT].push(input);
 
     var autocomplete = new google.maps.places.Autocomplete(input);
     autocomplete.bindTo('bounds', map);
@@ -257,7 +257,7 @@ function setArea(){
     myLatLng.push(newArea);
 
     messageStyle.style.display = "block";
-    messageStyle.innerHTML = "Successfuly set new area";
+    messageStyle.innerHTML = "Successfuly Set New Area";
 
     createAreaDropdown()
 
@@ -343,4 +343,17 @@ function removeMarker(){
 
     messageStyle.style.display = "block";
     messageStyle.innerHTML = "You are in Remove Mode. Click 'Remove' again to exit";
+}
+
+function search(){
+    var searchBox = document.getElementById("search-button");
+
+    if(searchMode){
+        searchMode = false;
+        searchBox.style.display = "none";
+        return;
+    }
+
+    searchMode = true;
+    searchBox.style.display = "flex";
 }

@@ -9,7 +9,7 @@
 	<link href="https://fonts.googleapis.com/css?family=Montserrat:100,200,300,400" rel="stylesheet">
 	
 	<script
-	src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBvacBWJA_KAjf2OequEv3P4C-kNF_eFAw&callback=initMap&libraries=geometry&libraries=places&v=weekly"
+	src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBvacBWJA_KAjf2OequEv3P4C-kNF_eFAw&callback=initMap&libraries=geometry,places&v=weekly"
 	defer
 	></script>
 
@@ -51,17 +51,39 @@
 				Remove
 			</button>
 			</div>
+			<div class="button-container">
+				<a href="#popup1" >
+					<button type="button" id="remove-marker-button" class="mapperbutton">
+						Show Table
+					</button>
+				</a>
+			</div>
 		</div>
 
-	<!-- Search input -->
-	<div id="search-button" class="searchButton">
-	<img src="images/Google__G__Logo.svg.webp" id="googleIcon">
-	<input id="searchInput" class="controls" type="text" placeholder="Enter a location">
-	</div>
+		<!-- Search input -->
+		<div id="search-button" class="searchButton">
+			<img src="images/Google__G__Logo.svg.webp" id="googleIcon">
+			<input id="searchInput" class="controls" type="text" placeholder="Enter a location">
+		</div>
 
-	<!-- Google map -->
-	<div id="map"></div>
+		<!-- Google map -->
+		<div id="map"></div>
 
+		<!--Table pop up-->
+		<div id="popup1" class="overlay">
+			<div class="popup">
+				<h2>Patients List</h2>
+				<a class="close" href="#">×</a>
+				<div class="content">
+					<table id="MyTable">
+						<tr>
+							<th>Patient's Number</th>
+							<th>Patient's Location</th>	  
+						</tr>
+					</table>
+				</div>
+			</div>
+		</div>
 	</div>
 
 	<script>

@@ -1,40 +1,31 @@
 var map;
+
 var removeMode = false;
 var addMode = false;
 var addMarkerEvent;
-var messageStyle = document.getElementById("message");
-var searchBox = document.getElementById("search-button");
-var polygonArray = [];
 
-// dapat itong mga variable na ito ay kunin from some storage:
+var messageStyle = document.getElementById("message");
+var table = document.getElementById("MyTable");
+
 var myLatLng = [];
 var patientLocations = [
-    {id: 4, lat: 14.696836905199396, lng: 121.08990540524388},
-    {id: 3, lat: 14.697044003785694, lng: 121.08903818030394},
-    {id: 6, lat: 14.698455087777315, lng: 121.0890975078075},
-    {id: 7, lat: 14.69846533740118, lng: 121.08870014355143},
-    {id: 8, lat: 14.697932357114198, lng: 121.08841933939966},
-    {id: 10, lat: 14.69630265943562, lng: 121.08977567629718},
-    {id: 13, lat: 14.69704063681295, lng: 121.08973329087912},
-    {id: 14, lat: 14.696758770697233, lng: 121.09109492613807},
-    {id: 15, lat: 14.696312909477232, lng: 121.09138102832385},
-    {id: 16, lat: 14.696799256445125, lng: 121.09146632924985},
-    {id: 18, lat: 14.697253218018657, lng: 121.09107655960314},
-    {id: 19, lat: 14.696920103702594, lng: 121.08853342764404},
-    {id: 20, lat: 14.697237842943151, lng: 121.08875595153903},
-    {id: 21, lat: 14.69659146737734, lng: 121.09185894526271},
-    {id: 22, lat: 14.697120735826479, lng: 121.0916896679806},
-    {id: 23, lat: 14.696666564027558, lng: 121.09005911247087},
-    {id: 24, lat: 14.69713292516586, lng: 121.09023395291379},
-    {id: 25, lat: 14.697277544307225, lng: 121.08814922275646},
+    {id: 1, lat: 14.696836905199396, lng: 121.08990540524388},
+    {id: 2, lat: 14.697044003785694, lng: 121.08903818030394},
+    {id: 3, lat: 14.698455087777315, lng: 121.0890975078075},
+    {id: 4, lat: 14.69846533740118, lng: 121.08870014355143},
+    {id: 5, lat: 14.697932357114198, lng: 121.08841933939966},
 ];
+var polygonArray = [];
+
 patientLocations.sort((a,b) => b.id - a.id);
-var counter = patientLocations[0].id
+var counter = patientLocations[0].id;
 
 function initMap() {
     geocoder = new google.maps.Geocoder();
 
-    if(myLatLng.length===0){ myLatLng[0] = {id:1, lat: 14.576368776100365, lng: 121.02620400481982, zoom:11};}
+    if(myLatLng.length===0){ 
+        myLatLng[0] = {id:1, lat: 14.576368776100365, lng: 121.02620400481982, zoom:11};
+    }
 
     map = new google.maps.Map(document.getElementById("map"), {
         center: myLatLng[0],
@@ -42,7 +33,32 @@ function initMap() {
         clickableIcons: false
     });
 
+    var i;
+    for(i = 0; i < patientLocations.length; i++){ 
+        createMarker(patientLocations[i], patientLocations[i].id);
+
+        getAddress(patientLocations[i].lat, patientLocations[i].lng, function(result, i){
+            patientLocations[i]['address'] = result;
+            printAddress(); 
+        }, i);
+    }
+
+    cluster(patientLocations);
+
+    createAreaDropdown();
+
+    if (!google.maps.Polygon.prototype.getBounds) {
+ 
+        google.maps.Polygon.prototype.getBounds=function(){
+            var bounds = new google.maps.LatLngBounds()
+            this.getPath().forEach(function(element,index){bounds.extend(element)})
+            return bounds
+        }
+         
+    }
+
     var input = document.getElementById('searchInput');
+    map.controls[google.maps.ControlPosition.TOP_LEFT].push(input);
 
     var autocomplete = new google.maps.places.Autocomplete(input);
     autocomplete.bindTo('bounds', map);
@@ -59,26 +75,54 @@ function initMap() {
             map.fitBounds(place.geometry.viewport);
         } else {
             map.setCenter(place.geometry.location);
-            map.setZoom(17);
+            map.setZoom(27);
         }
-        console.log(place.geometry.location.lat());
         counter++;
         createMarker(place.geometry.location, counter);
         patientLocations.push({id: counter, lat: place.geometry.location.lat(), lng: place.geometry.location.lng()});
         removePolygons();
         cluster(patientLocations);
     });
+}
 
+//function to print addresses into html
+
+//just call this function to print the addresses after changes
+//like after a marker is moved or added or deleted
+function printAddress(){
+    while (table.rows.length > 1) {
+        table.deleteRow(1);
+    }
+
+    patientLocations.sort((a,b) => a.id - b.id);
 
     var i;
     for(i = 0; i < patientLocations.length; i++){
-        createMarker(patientLocations[i], patientLocations[i].id);
+        var row = table.insertRow(-1); 
+        var cell1 = row.insertCell(0);
+        var cell2 = row.insertCell(1);  
+
+        cell1.innerHTML = patientLocations[i].id;
+        cell2.innerHTML = patientLocations[i].address;
     }
-
-    cluster(patientLocations);
-
-    createAreaDropdown();
 }
+
+//function to get address of lat lng
+
+function getAddress(lat, lng, callback, i) {
+    i = i || 0; //optional variable that may or may not contain value.
+    geocoder.geocode({
+        latLng: new google.maps.LatLng(lat,lng)
+    }, function(responses) {
+        if (responses && responses.length > 0) {
+            callback(responses[0].formatted_address, i);
+        } else {
+            callback("no formatted addresss", i);
+        }
+    });
+}
+
+//functions for clustering the points
 
 function cluster(points){
     var i;
@@ -112,6 +156,8 @@ function cluster(points){
     drawPolygons();
 }
 
+//function for disjoint set data structure
+
 function newCluster(point, rankNum){
     var set = {
         rank: rankNum,
@@ -143,23 +189,7 @@ function union(point1, point2){
     } 
 }
 
-function displayAddress(marker){
-    const infowindow = new google.maps.InfoWindow({
-
-    });
-
-    geocoder.geocode({
-        latLng: marker.getPosition()
-    }, function(responses) {
-        if (responses && responses.length > 0) {
-          infowindow.setContent(responses[0].formatted_address);
-        } else {
-          infowindow.setContent('Cannot determine address at this location.');
-        }
-    });
-
-    infowindow.open(marker.get("map"), marker);
-}
+//function for creating the marker
 
 function createMarker(position, id){
     const marker = new google.maps.Marker({
@@ -168,37 +198,63 @@ function createMarker(position, id){
         map,
     });
 
+    const infowindow = new google.maps.InfoWindow();
+
     marker.addListener("click", () => {
         if(removeMode){
+            counter--;
             const position = patientLocations.findIndex(x => x.id == id);
             patientLocations.splice(position, 1);
+            
             marker.setMap(null);
+
+            printAddress();
             removePolygons();
             cluster(patientLocations);
         } else {
-            displayAddress(marker);
-        }
-        
+            getAddress(marker.getPosition().lat(), marker.getPosition().lng(), function(address){
+                infowindow.setContent("(" + id + ") " + address);
+                infowindow.open(marker.get("map"), marker);
+            });
+        }  
     });
+
     google.maps.event.addListener(marker, 'dragend', function() {
         const position = patientLocations.findIndex(x => x.id == id);
         patientLocations[position].lat = marker.getPosition().lat();
         patientLocations[position].lng = marker.getPosition().lng(); 
+        getAddress(marker.getPosition().lat(), marker.getPosition().lng(), function(address){
+            patientLocations[position].address = address;
+            infowindow.setContent("(" + id + ") " + address);
+            printAddress();
+        });
         removePolygons();
         cluster(patientLocations);
     });
 }
 
+//functions for google maps polygon
+
 function createHullPolygon(points) {
+    var color = "red";
+    
     var polygon = new google.maps.Polygon({
         paths: points,
-        strokeColor: "#FF0000",
+        strokeColor: color,
         strokeOpacity: 0.8,
         strokeWeight: 2,
-        fillColor: "#FF0000",
+        fillColor: color,
         fillOpacity: 0.35,
         clickable: false,
     });
+    var area = google.maps.geometry.spherical.computeArea(polygon.getPath());
+    if(area >= 5000 && area < 20000){
+        color = "#eb004e";
+    }else if(area >= 20000){
+        color = "#a100a1";
+    }
+    polygon.setOptions({strokeColor: color, fillColor: color});
+
     polygonArray.push(polygon);
 }
 
@@ -217,9 +273,7 @@ function removePolygons() {
     polygonArray = [];
 }
 
-function isLeft(a, b, c){
-    return result = ((b.lng - a.lng) * (c.lat - a.lat) - (b.lat - a.lat) * (c.lng - a.lng)) > 0;
-}
+//functions for convex hull
 
 function convexHull(coordinates){
     const points = coordinates;
@@ -244,6 +298,12 @@ function convexHull(coordinates){
     return result;
 }
 
+function isLeft(a, b, c){
+    return result = ((b.lng - a.lng) * (c.lat - a.lat) - (b.lat - a.lat) * (c.lng - a.lng)) > 0;
+}
+
+// functions for area
+
 function setArea(){
     lat = map.getCenter().lat();
     lng = map.getCenter().lng();
@@ -257,7 +317,7 @@ function setArea(){
     myLatLng.push(newArea);
 
     messageStyle.style.display = "block";
-    messageStyle.innerHTML = "Successfuly Set New Area";
+    messageStyle.innerHTML = "Successfuly set new area";
 
     createAreaDropdown()
 
@@ -310,11 +370,12 @@ function createAreaDropdown() {
     dropdown.append(insert);
 }
 
+//functions for add and remove
+
 function addMarker(){
     if(addMode){
         addMode = false;
         messageStyle.style.display = "none";
-        searchBox.style.display = "none";
         google.maps.event.removeListener(addMarkerEvent);
         return;
     }
@@ -322,18 +383,26 @@ function addMarker(){
     removeMode = false;
     
     messageStyle.style.display = "block";
-    searchBox.style.display = "flex";
     messageStyle.innerHTML = "You are in Add Mode. Click 'Add' again to exit";
     addMarkerEvent = map.addListener("click", (mapsMouseEvent) =>{
-        counter++;
+        counter++; // index of available space in array or last index
+
         createMarker(mapsMouseEvent.latLng, counter);
-        patientLocations.push({id: counter, lat: mapsMouseEvent.latLng.lat(), lng: mapsMouseEvent.latLng.lng()});
-        removePolygons();
-        cluster(patientLocations);
+
+        getAddress(mapsMouseEvent.latLng.lat(), mapsMouseEvent.latLng.lng(), function(address){
+            //these codes are inside the callback function
+            //because we have to make sure that the geocoding is done before proceeding
+            patientLocations.push({id: counter, lat: mapsMouseEvent.latLng.lat(), lng: mapsMouseEvent.latLng.lng(), address: address});
+            printAddress();
+
+            removePolygons();
+            cluster(patientLocations);   
+        });
     });
 }
 
 function removeMarker(){
+    //console.clear()
     if(removeMode){
         removeMode = false;
         messageStyle.style.display = "none";
@@ -342,8 +411,8 @@ function removeMarker(){
     removeMode = true;
     addMode = false;
     google.maps.event.removeListener(addMarkerEvent);
-
-    document.getElementById("search-button").style.display = "none";
+   
     messageStyle.style.display = "block";
     messageStyle.innerHTML = "You are in Remove Mode. Click 'Remove' again to exit";
 }
+

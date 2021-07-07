@@ -30,7 +30,17 @@
 			<img src="images/menu.png" class="menu-icon" onclick="togglemenu()">
 		</div>
 
-		<div id="message">
+		<div id="data-box" class="data">
+			<h3 id="data-title">Data</h3><div id="close-data-button" onclick="closeData()">✖</div><br><br>
+			<div id="data-content"></div>
+		</div>
+
+		<div class="message-box" id="message">
+		</div>
+
+		<div class="message-box" id="save-message-box">
+			<p id="save-message"></p>
+			<div id="close-save-message" onclick="closeSaveMessage()">✖</div>
 		</div>
 
 		<div id="options" class="options">
@@ -64,6 +74,11 @@
 						Show Table
 					</button>
 				</a>
+			</div>
+			<div class="button-container">
+				<button type="button" id="save-button" class="mapperbutton" onclick="saveData()">
+					Save
+				</button>
 			</div>
 		</div>
 

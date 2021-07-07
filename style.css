@@ -315,6 +315,11 @@ nav ul li a:hover{
 	width:80%;
 }
 
+.cluster-dropdown-content{
+	width: 500px;
+    padding: 10px 0px;
+}
+
 .remove-area-button{
 	padding:10px 0px;
 	width:20%;
@@ -338,7 +343,7 @@ nav ul li a:hover{
 }
 .go-to-area-button:hover .dropdown{	display:flex; }
 
-.dropdown-content:hover{ background-color: rgb(247, 247, 247); }
+.dropdown-content:hover, .cluster-dropdown-content:hover{ background-color: rgb(247, 247, 247); }
 
 #message {
 padding: 14px;

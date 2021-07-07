@@ -345,7 +345,25 @@ nav ul li a:hover{
 
 .dropdown-content:hover, .cluster-dropdown-content:hover{ background-color: rgb(247, 247, 247); }
 
-#message {
+.data{
+	display: none;
+	border: 1px solid #3f0d12;
+    margin-bottom: 10px;
+    border-radius: 30px;
+    padding: 30px;
+}
+
+#data-title{
+	display: inline;
+}
+#close-data-button{
+	font-weight: 600;
+	cursor: pointer;
+	display: inline;
+	float: right;
+}
+
+.message-box {
 padding: 14px;
   background-color: #04cd83;
   color: white;
@@ -355,6 +373,19 @@ padding: 14px;
   animation: fadeIn 1.5s;
 }
 
+#save-message{
+	flex: 1;
+}
+
+#close-save-message{
+	float: right;
+	cursor: pointer;
+	font-weight: 600;
+}
+
+#save-button{
+	background-color: greenyellow;
+}
 .searchButton{
 	width: 100%;
 	height: 10vh;

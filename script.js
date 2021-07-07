@@ -8,35 +8,27 @@ var messageStyle = document.getElementById("message");
 var table = document.getElementById("MyTable");
 var clusterDropdown = document.getElementById("cluster-dropdown");
 var dropdown = document.getElementById("dropdown");
+var saveMessageBox = document.getElementById("save-message-box");
+var saveMessage = document.getElementById("save-message");
+var dataBox = document.getElementById("data-box");
+var dataContent = document.getElementById("data-content");
 
-var myLatLng = [
-    {id: 1, lat: 14.698526902744138, lng: 121.09139364189237, zoom: 17},
-    {id: 2, lat: 14.698309331987971, lng: 121.0803800307725, zoom: 17}
-];
-// i decided na isama na dito yung address data
-// para di na maggeocode sa initialize
-var patientLocations = [
-    {id: 1, lat: 14.696836905199396, lng: 121.08990540524388, address: "1121 Katipunan St, Quezon City, Metro Manila, Philippines"},
-    {id: 2, lat: 14.69744873751683, lng: 121.08948879141845, address: "018 C Kasoy St, Quezon City, 1121 Metro Manila, Philippines"},
-    {id: 3, lat: 14.698455087777315, lng: 121.0890975078075, address: "40b Katipunan St, Quezon City, 1121 Metro Manila, Philippines"},
-    {id: 4, lat: 14.69846533740118, lng: 121.08870014355143, address: "007 Kasoy St, Quezon City, Metro Manila, Philippines"},
-    {id: 5, lat: 14.697932357114198, lng: 121.08841933939966, address: "74 Katuparan, Brgy, Quezon City, Metro Manila, Philippines"},
-    {id: 6, lat: 14.696889098918827, lng: 121.0899960887029, address: "70 Katuparan, Quezon City, 1122 Metro Manila, Philippines"},
-    {id: 7, lat: 14.696789212523344, lng: 121.08999877091192, address: "70 Katuparan, Quezon City, 1122 Metro Manila, Philippines"},
-    {id: 8, lat: 14.699498136952942, lng: 121.09121103548996, address: "6415 1 Bp Road, Quezon City, 1121 Metro Manila, Philippines"},
-    {id: 9, lat: 14.69897665786056, lng: 121.09164555335038, address: "6500 Batasan Rd, Quezon City, 1121 Metro Manila, Philippines"},
-    {id: 10, lat: 14.69897665786056, lng: 121.09137733244889, address: "082 Kaunlaran, Quezon City, Metro Manila, Philippines"},
-];
+var myLatLng = JSON.parse(localStorage.getItem("myLatLng") || "[]");
+var patientLocations = JSON.parse(localStorage.getItem("patientLocations") || "[]");
 var polygonArray = [];
+var clusterArray = [];
 
 patientLocations.sort((a,b) => b.id - a.id);
-var counter = patientLocations[0].id;
+var counter;
+if(!patientLocations[0]) counter = 0; 
+else counter = patientLocations[0].id;
 
 function initMap() {
     geocoder = new google.maps.Geocoder();
 
     if(myLatLng.length===0){ 
         myLatLng[0] = {id:1, lat: 14.576368776100365, lng: 121.02620400481982, zoom:11};
+        console.log("am i the error? initmap");
     }
 
     map = new google.maps.Map(document.getElementById("map"), {
@@ -87,7 +79,6 @@ function initMap() {
         createMarker(place.geometry.location, counter);
         getAddress(place.geometry.location.lat(), place.geometry.location.lng(), function(result){
             patientLocations.push({id: counter, lat: place.geometry.location.lat(), lng: place.geometry.location.lng(), address: result});
-            removePolygons();
             cluster(patientLocations);
         });
     });
@@ -153,16 +144,20 @@ function cluster(points){
 
     const clusterId = [... new Set(result.map(x => x.parent.rank))];
 
+    clusterArray = [];
+    removePolygons();
+
     for(i = 0; i <clusterId.length; i++){ // O of no. of clusters
         var clusterPoints = result.filter(function(point){ // of of n
             var root = find(point);
             return root.rank == clusterId[i];
         });
-        const newHull = convexHull(clusterPoints);  // O of nh
+        clusterArray.push(clusterPoints); // o of 1
+        var newHull = convexHull(clusterPoints);  // O of nh ... jarvis march algorithm
         createHullPolygon(newHull); // O of 1
     }
     drawPolygons();
-    createClulsterDropdown();
+    createClusterDropdown();
 }
 
 //function for disjoint set data structure
@@ -218,7 +213,6 @@ function createMarker(position, id){
             marker.setMap(null);
 
             printAddress();
-            removePolygons();
             cluster(patientLocations);
         } else {
             getAddress(marker.getPosition().lat(), marker.getPosition().lng(), function(address){
@@ -237,7 +231,6 @@ function createMarker(position, id){
             infowindow.setContent("(" + id + ") " + address);
             printAddress();
         });
-        removePolygons();
         cluster(patientLocations);
     });
 }
@@ -256,20 +249,47 @@ function createHullPolygon(points) {
         fillOpacity: 0.35,
         clickable: false,
     });
+    polygonArray.push(polygon);
+
     var area = google.maps.geometry.spherical.computeArea(polygon.getPath());
     if(area >= 5000 && area < 20000){
         color = "#eb004e";
     }else if(area >= 20000){
         color = "#a100a1";
     }
-    polygon.setOptions({strokeColor: color, fillColor: color});
 
-    polygonArray.push(polygon);
+    polygon.setOptions({strokeColor: color, fillColor: color});
 }
 
-function createClulsterDropdown(){
+function clusterData(i){
+    dataContent.innerHTML = '';
+    dataBox.style.display = "block";
+    var contentString = '<b>Cluster ' + (i + 1) + '</b><br><br>';
+
+    //get area of coresponding polygon
+    var area = google.maps.geometry.spherical.computeArea(polygonArray[i].getPath());
+    area = area.toFixed(2);
+    contentString = contentString + "Area: " + area + " sqm <br>";
+
+    //get number of patients in the cluster
+    var patientNum = clusterArray[i].length;
+    contentString = contentString + "No. of patients: " + patientNum + "<br>";
+
+    //get density people per sq m
+    var density = patientNum / area;
+    density = density.toFixed(4);
+    contentString = contentString + "Density: " + density + " patient per sqm <br>";
+
+    document.getElementById("data-content").innerHTML = contentString;
+}
+
+function closeData(){
+    dataBox.style.display = "none";
+}
+
+function createClusterDropdown(){
     var i;
-    for(i = 0; i < polygonArray.length; i++){
+    for(i = 0; i < clusterArray.length; i++){
         var id = i + 1;
         var clusterButton = document.createElement("div");
 
@@ -284,6 +304,8 @@ function createClulsterDropdown(){
 function viewPolygon(i){
     var bounds = polygonArray[i - 1].getBounds();
     map.fitBounds(bounds, 100);
+
+    clusterData(i - 1);
 }
 
 function drawPolygons() {
@@ -422,7 +444,6 @@ function addMarker(){
             patientLocations.push({id: counter, lat: mapsMouseEvent.latLng.lat(), lng: mapsMouseEvent.latLng.lng(), address: address});
             printAddress();
 
-            removePolygons();
             cluster(patientLocations);   
         });
     });
@@ -441,4 +462,19 @@ function removeMarker(){
    
     messageStyle.style.display = "block";
     messageStyle.innerHTML = "You are in Remove Mode. Click 'Remove' again to exit";
+}
+
+//function to save data
+
+function saveData(){
+    localStorage.setItem("patientLocations", JSON.stringify(patientLocations));
+    localStorage.setItem("myLatLng", JSON.stringify(myLatLng));
+
+    saveMessageBox.style.display = "flex";
+    saveMessage.innerHTML = "Your progress has been saved.";
+}
+
+function closeSaveMessage(){
+    var saveMessageBox = document.getElementById("save-message-box");
+    saveMessageBox.style.display = "none";
 }

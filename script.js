@@ -6,14 +6,26 @@ var addMarkerEvent;
 
 var messageStyle = document.getElementById("message");
 var table = document.getElementById("MyTable");
+var clusterDropdown = document.getElementById("cluster-dropdown");
+var dropdown = document.getElementById("dropdown");
 
-var myLatLng = [];
+var myLatLng = [
+    {id: 1, lat: 14.698526902744138, lng: 121.09139364189237, zoom: 17},
+    {id: 2, lat: 14.698309331987971, lng: 121.0803800307725, zoom: 17}
+];
+// i decided na isama na dito yung address data
+// para di na maggeocode sa initialize
 var patientLocations = [
-    {id: 1, lat: 14.696836905199396, lng: 121.08990540524388},
-    {id: 2, lat: 14.697044003785694, lng: 121.08903818030394},
-    {id: 3, lat: 14.698455087777315, lng: 121.0890975078075},
-    {id: 4, lat: 14.69846533740118, lng: 121.08870014355143},
-    {id: 5, lat: 14.697932357114198, lng: 121.08841933939966},
+    {id: 1, lat: 14.696836905199396, lng: 121.08990540524388, address: "1121 Katipunan St, Quezon City, Metro Manila, Philippines"},
+    {id: 2, lat: 14.69744873751683, lng: 121.08948879141845, address: "018 C Kasoy St, Quezon City, 1121 Metro Manila, Philippines"},
+    {id: 3, lat: 14.698455087777315, lng: 121.0890975078075, address: "40b Katipunan St, Quezon City, 1121 Metro Manila, Philippines"},
+    {id: 4, lat: 14.69846533740118, lng: 121.08870014355143, address: "007 Kasoy St, Quezon City, Metro Manila, Philippines"},
+    {id: 5, lat: 14.697932357114198, lng: 121.08841933939966, address: "74 Katuparan, Brgy, Quezon City, Metro Manila, Philippines"},
+    {id: 6, lat: 14.696889098918827, lng: 121.0899960887029, address: "70 Katuparan, Quezon City, 1122 Metro Manila, Philippines"},
+    {id: 7, lat: 14.696789212523344, lng: 121.08999877091192, address: "70 Katuparan, Quezon City, 1122 Metro Manila, Philippines"},
+    {id: 8, lat: 14.699498136952942, lng: 121.09121103548996, address: "6415 1 Bp Road, Quezon City, 1121 Metro Manila, Philippines"},
+    {id: 9, lat: 14.69897665786056, lng: 121.09164555335038, address: "6500 Batasan Rd, Quezon City, 1121 Metro Manila, Philippines"},
+    {id: 10, lat: 14.69897665786056, lng: 121.09137733244889, address: "082 Kaunlaran, Quezon City, Metro Manila, Philippines"},
 ];
 var polygonArray = [];
 
@@ -36,25 +48,19 @@ function initMap() {
     var i;
     for(i = 0; i < patientLocations.length; i++){ 
         createMarker(patientLocations[i], patientLocations[i].id);
-
-        getAddress(patientLocations[i].lat, patientLocations[i].lng, function(result, i){
-            patientLocations[i]['address'] = result;
-            printAddress(); 
-        }, i);
     }
+    printAddress();
 
     cluster(patientLocations);
 
     createAreaDropdown();
 
     if (!google.maps.Polygon.prototype.getBounds) {
- 
         google.maps.Polygon.prototype.getBounds=function(){
             var bounds = new google.maps.LatLngBounds()
             this.getPath().forEach(function(element,index){bounds.extend(element)})
-            return bounds
+            return bounds;
         }
-         
     }
 
     var input = document.getElementById('searchInput');
@@ -79,14 +85,15 @@ function initMap() {
         }
         counter++;
         createMarker(place.geometry.location, counter);
-        patientLocations.push({id: counter, lat: place.geometry.location.lat(), lng: place.geometry.location.lng()});
-        removePolygons();
-        cluster(patientLocations);
+        getAddress(place.geometry.location.lat(), place.geometry.location.lng(), function(result){
+            patientLocations.push({id: counter, lat: place.geometry.location.lat(), lng: place.geometry.location.lng(), address: result});
+            removePolygons();
+            cluster(patientLocations);
+        });
     });
 }
 
 //function to print addresses into html
-
 //just call this function to print the addresses after changes
 //like after a marker is moved or added or deleted
 function printAddress(){
@@ -109,15 +116,14 @@ function printAddress(){
 
 //function to get address of lat lng
 
-function getAddress(lat, lng, callback, i) {
-    i = i || 0; //optional variable that may or may not contain value.
+function getAddress(lat, lng, callback) {
     geocoder.geocode({
         latLng: new google.maps.LatLng(lat,lng)
     }, function(responses) {
         if (responses && responses.length > 0) {
-            callback(responses[0].formatted_address, i);
+            callback(responses[0].formatted_address);
         } else {
-            callback("no formatted addresss", i);
+            callback("no formatted addresss");
         }
     });
 }
@@ -127,33 +133,36 @@ function getAddress(lat, lng, callback, i) {
 function cluster(points){
     var i;
     var result = [];
+    clusterDropdown.innerHTML = '';
 
-    for(i = 0; i < points.length; i++){
+    for(i = 0; i < points.length; i++){ // O of n
         var cluster = newCluster(points[i], i);
         result.push(cluster);
     }
 
-    for(i = 0; i < result.length; i++){
+    //O of 
+    for(i = 0; i < result.length; i++){ // O of n
         var j;
-        for(j = 0; j < i; j++){
+        for(j = 0; j < i; j++){ // O of i
             var length = Math.sqrt(Math.pow((result[j].lng - result[i].lng), 2) + Math.pow((result[j].lat - result[i].lat), 2));
             if(length < 0.00065){
-                union(result[i], result[j]);
+                union(result[i], result[j]); // O(α(n))
             }
         }
     }
 
     const clusterId = [... new Set(result.map(x => x.parent.rank))];
-    
-    for(i = 0; i <clusterId.length; i++){
-        var clusterPoints = result.filter(function(point){
+
+    for(i = 0; i <clusterId.length; i++){ // O of no. of clusters
+        var clusterPoints = result.filter(function(point){ // of of n
             var root = find(point);
             return root.rank == clusterId[i];
         });
-        const newHull = convexHull(clusterPoints);
-        createHullPolygon(newHull);
+        const newHull = convexHull(clusterPoints);  // O of nh
+        createHullPolygon(newHull); // O of 1
     }
     drawPolygons();
+    createClulsterDropdown();
 }
 
 //function for disjoint set data structure
@@ -258,6 +267,25 @@ function createHullPolygon(points) {
     polygonArray.push(polygon);
 }
 
+function createClulsterDropdown(){
+    var i;
+    for(i = 0; i < polygonArray.length; i++){
+        var id = i + 1;
+        var clusterButton = document.createElement("div");
+
+        clusterButton.setAttribute("class", "cluster-dropdown-content");
+        clusterButton.setAttribute("onclick", "viewPolygon(" + id + ")");
+        clusterButton.innerHTML = "Cluster " + id;
+    
+        clusterDropdown.append(clusterButton);
+    }
+}
+
+function viewPolygon(i){
+    var bounds = polygonArray[i - 1].getBounds();
+    map.fitBounds(bounds, 100);
+}
+
 function drawPolygons() {
     var i;
     for(i = 0; i < polygonArray.length; i++){
@@ -336,7 +364,6 @@ function removeArea(a){
 }
 
 function createAreaDropdown() {
-    var dropdown = document.getElementById("dropdown");
     dropdown.innerHTML = "";
 
     var i;
@@ -415,4 +442,3 @@ function removeMarker(){
     messageStyle.style.display = "block";
     messageStyle.innerHTML = "You are in Remove Mode. Click 'Remove' again to exit";
 }
-

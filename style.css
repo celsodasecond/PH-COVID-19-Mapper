@@ -351,6 +351,14 @@ nav ul li a:hover{
     margin-bottom: 10px;
     border-radius: 30px;
     padding: 30px;
+	position: absolute;
+	width:250px;
+	z-index: 2;
+    background-color: white;
+    opacity: 0.8;
+	top: 50px;
+	left: 20px;
+	box-shadow: 2px 2px 20px rgb(0 0 0 / 40%);
 }
 
 #data-title{
@@ -383,9 +391,15 @@ padding: 14px;
 	font-weight: 600;
 }
 
-#save-button{
-	background-color: greenyellow;
+.finish{
+	background-color:#a71d31;
+	color: white;
 }
+
+.finish:hover{
+	background-color: #3f0d12;
+}
+
 .searchButton{
 	width: 100%;
 	height: 10vh;
@@ -400,9 +414,9 @@ padding: 14px;
 #searchInput{
 	border-radius: 55px;
 	padding: 12px;
-	width: 100%;
+	width: 70%;
 	background: #f0f3ff;
-	display: flex;
+	display: none;
 	align-items: center;
 	box-shadow: 6px 6px 10px -1px rgba(0, 0, 0, 0.15),
 				-6px -6px 10px -1px rgba(255, 255, 255, 0.7);
@@ -492,6 +506,66 @@ td{
 	margin-left:10px;
 }
 
+#map-container{
+	position: relative;
+}
+
+#export{
+	text-align: center;
+	display:none;
+	position: fixed;
+	top: 50px;
+	padding: 20px;
+	box-shadow: 2px 2px 20px rgba(0, 0, 0, 0.3);
+	background-color: white;
+	left: 50%;
+    transform: translateX(-50%);
+	z-index: 5;
+}
+
+#nearby-hospital{
+	padding-right: 10px;
+}
+
+.hospital-details{
+	padding: 10px;
+    border: 3px solid rgba(200,200,200);
+    border-radius: 5px;
+	cursor: pointer;
+	transition: 0.5s;
+	margin-bottom:10px;
+}
+
+.hospital-details:hover{
+	color: green;
+	border: 3px solid green;
+}
+
+.hospital-name{
+	font-weight: 600;
+}
+
+.hospital-location{
+	font-size: smaller;
+}
+
+.nearby-hospital-wrapper{
+	height: 200px;
+	overflow: auto;
+}
+
+::-webkit-scrollbar {
+	width: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+	background: rgba(200,200,200);
+	border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+	background: green;
+  }
 
 @media only screen and (max-width:700px) {
 	nav ul{

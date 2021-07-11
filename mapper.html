@@ -7,7 +7,6 @@
 	<link rel="index icon" href="images/virus.ico"/>
 	<link rel="preconnect" href="https://fonts.gstatic.com">
 	<link href="https://fonts.googleapis.com/css?family=Montserrat:100,200,300,400" rel="stylesheet">
-	
 	<script
 	src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBvacBWJA_KAjf2OequEv3P4C-kNF_eFAw&callback=initMap&libraries=geometry,places&v=weekly"
 	defer
@@ -28,11 +27,6 @@
 				</ul>
 			</nav>
 			<img src="images/menu.png" class="menu-icon" onclick="togglemenu()">
-		</div>
-
-		<div id="data-box" class="data">
-			<h3 id="data-title">Data</h3><div id="close-data-button" onclick="closeData()">✖</div><br><br>
-			<div id="data-content"></div>
 		</div>
 
 		<div class="message-box" id="message">
@@ -76,8 +70,13 @@
 				</a>
 			</div>
 			<div class="button-container">
-				<button type="button" id="save-button" class="mapperbutton" onclick="saveData()">
+				<button type="button" id="save-button" class="mapperbutton finish" onclick="saveData()">
 					Save
+				</button>
+			</div>
+			<div class="button-container">
+				<button type="button" id="export-button" class="mapperbutton finish" onclick="saveImage()">
+					Export
 				</button>
 			</div>
 		</div>
@@ -89,7 +88,25 @@
 		</div>
 
 		<!-- Google map -->
-		<div id="map"></div>
+		<div id="map-container">
+			<div id="data-box" class="data">
+				<h3 id="data-title">Data</h3><div id="close-data-button" onclick="closeData()">✖</div><br><br>
+				<div id="data-content"></div><br>
+				<h4>Nearby Hospitals</h4><br>
+				<div class="nearby-hospital-wrapper">
+					<div id="nearby-hospital"></div>
+				</div>
+			</div>
+			<div id="map"></div>
+		</div>
+
+		<!-- image export-->
+		<div id="export">
+			<div id="close-save-message" onclick="closeExportBox()">✖</div>
+			<h3>Image Export</h3><br>
+			<p>Right-click on the image and click "save image as...".</p>
+			<div id="canvas-container"></div>
+		</div>
 
 		<!--Table pop up-->
 		<div id="popup1" class="overlay">
@@ -127,5 +144,6 @@
 
 	</script>
 	<script src="script.js"></script>
+	<script src="html2canvas.min.js"></script>
 </body>
 </html>

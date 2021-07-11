@@ -3,6 +3,7 @@ var map;
 var removeMode = false;
 var addMode = false;
 var addMarkerEvent;
+var currentCluster = 'none';
 
 var messageStyle = document.getElementById("message");
 var table = document.getElementById("MyTable");
@@ -12,6 +13,9 @@ var saveMessageBox = document.getElementById("save-message-box");
 var saveMessage = document.getElementById("save-message");
 var dataBox = document.getElementById("data-box");
 var dataContent = document.getElementById("data-content");
+var searchInput = document.getElementById("searchInput");
+var exportBox = document.getElementById("export");
+var canvasContainer = document.getElementById("canvas-container");
 
 var myLatLng = JSON.parse(localStorage.getItem("myLatLng") || "[]");
 var patientLocations = JSON.parse(localStorage.getItem("patientLocations") || "[]");
@@ -28,7 +32,6 @@ function initMap() {
 
     if(myLatLng.length===0){ 
         myLatLng[0] = {id:1, lat: 14.576368776100365, lng: 121.02620400481982, zoom:11};
-        console.log("am i the error? initmap");
     }
 
     map = new google.maps.Map(document.getElementById("map"), {
@@ -43,7 +46,7 @@ function initMap() {
     }
     printAddress();
 
-    cluster(patientLocations);
+    cluster();
 
     createAreaDropdown();
 
@@ -77,9 +80,9 @@ function initMap() {
         }
         counter++;
         createMarker(place.geometry.location, counter);
-        getAddress(place.geometry.location.lat(), place.geometry.location.lng(), function(result){
-            patientLocations.push({id: counter, lat: place.geometry.location.lat(), lng: place.geometry.location.lng(), address: result});
-            cluster(patientLocations);
+        getAddress(place.geometry.location.lat(), place.geometry.location.lng(), function(result, street, i){
+            patientLocations.push({id: counter, lat: place.geometry.location.lat(), lng: place.geometry.location.lng(), address: result, street: street});
+            cluster();
         });
     });
 }
@@ -107,24 +110,31 @@ function printAddress(){
 
 //function to get address of lat lng
 
-function getAddress(lat, lng, callback) {
+function getAddress(lat, lng, callback, i) {
+    i = i || 0;
     geocoder.geocode({
         latLng: new google.maps.LatLng(lat,lng)
     }, function(responses) {
         if (responses && responses.length > 0) {
-            callback(responses[0].formatted_address);
+            if(responses[0].address_components[1].types[0] == "route"){
+                var street = responses[0].address_components[1].long_name;
+            }
+            callback(responses[0].formatted_address, street, i);
         } else {
-            callback("no formatted addresss");
+            callback("no formatted addresss", "no formatted addresss", i);
         }
     });
 }
 
 //functions for clustering the points
 
-function cluster(points){
+function cluster(){
+    var points = patientLocations;
     var i;
     var result = [];
     clusterDropdown.innerHTML = '';
+    clusterArray = [];
+    removePolygons();
 
     for(i = 0; i < points.length; i++){ // O of n
         var cluster = newCluster(points[i], i);
@@ -134,28 +144,27 @@ function cluster(points){
     //O of 
     for(i = 0; i < result.length; i++){ // O of n
         var j;
-        for(j = 0; j < i; j++){ // O of i
+        for(j = 0; j < i; j++){ // O of average of n 
             var length = Math.sqrt(Math.pow((result[j].lng - result[i].lng), 2) + Math.pow((result[j].lat - result[i].lat), 2));
             if(length < 0.00065){
-                union(result[i], result[j]); // O(α(n))
+                union(result[i], result[j]); // O of amortized n
             }
         }
     }
 
-    const clusterId = [... new Set(result.map(x => x.parent.rank))];
-
-    clusterArray = [];
-    removePolygons();
+    var clusterId = [... new Set(result.map(x => x.parent.rank))];
 
     for(i = 0; i <clusterId.length; i++){ // O of no. of clusters
-        var clusterPoints = result.filter(function(point){ // of of n
-            var root = find(point);
+        var clusterPoints = result.filter(function(point){ // O of n
+            var root = find(point); // O of amortized n
             return root.rank == clusterId[i];
         });
         clusterArray.push(clusterPoints); // o of 1
-        var newHull = convexHull(clusterPoints);  // O of nh ... jarvis march algorithm
+        var newHull = convexHull(clusterPoints);  // O of subset of n that is part of the cluster x hull points .... O(nh) jarvis march
         createHullPolygon(newHull); // O of 1
     }
+
+    if(currentCluster != 'none') displayClusterData(currentCluster);
     drawPolygons();
     createClusterDropdown();
 }
@@ -167,7 +176,9 @@ function newCluster(point, rankNum){
         rank: rankNum,
         id: point.id,
         lat: point.lat,
-        lng: point.lng
+        lng: point.lng,
+        address: point.address,
+        street: point.street
     }
     set.parent = set;
     return set;
@@ -196,6 +207,7 @@ function union(point1, point2){
 //function for creating the marker
 
 function createMarker(position, id){
+    //console.log(position);
     const marker = new google.maps.Marker({
         position: position,
         draggable: true,
@@ -207,15 +219,15 @@ function createMarker(position, id){
     marker.addListener("click", () => {
         if(removeMode){
             counter--;
-            const position = patientLocations.findIndex(x => x.id == id);
-            patientLocations.splice(position, 1);
+            const locationIndex = patientLocations.findIndex(x => x.id == id);
+            patientLocations.splice(locationIndex, 1);
             
             marker.setMap(null);
 
             printAddress();
-            cluster(patientLocations);
+            cluster();
         } else {
-            getAddress(marker.getPosition().lat(), marker.getPosition().lng(), function(address){
+            getAddress(marker.getPosition().lat(), marker.getPosition().lng(), function(address, street, i){
                 infowindow.setContent("(" + id + ") " + address);
                 infowindow.open(marker.get("map"), marker);
             });
@@ -226,19 +238,20 @@ function createMarker(position, id){
         const position = patientLocations.findIndex(x => x.id == id);
         patientLocations[position].lat = marker.getPosition().lat();
         patientLocations[position].lng = marker.getPosition().lng(); 
-        getAddress(marker.getPosition().lat(), marker.getPosition().lng(), function(address){
+        getAddress(marker.getPosition().lat(), marker.getPosition().lng(), function(address, street, i){
             patientLocations[position].address = address;
+            patientLocations[position].street = street;
             infowindow.setContent("(" + id + ") " + address);
             printAddress();
         });
-        cluster(patientLocations);
+        cluster();
     });
 }
 
 //functions for google maps polygon
 
 function createHullPolygon(points) {
-    var color = "red";
+    var color = "#ff7b1c";
     
     var polygon = new google.maps.Polygon({
         paths: points,
@@ -253,38 +266,120 @@ function createHullPolygon(points) {
 
     var area = google.maps.geometry.spherical.computeArea(polygon.getPath());
     if(area >= 5000 && area < 20000){
-        color = "#eb004e";
+        color = "#ff0000";
     }else if(area >= 20000){
-        color = "#a100a1";
+        color = "#d90045";
     }
 
     polygon.setOptions({strokeColor: color, fillColor: color});
 }
 
-function clusterData(i){
+function displayClusterData(i){
+    if(clusterArray[i] === undefined){
+        dataBox.style.display = "none";
+        return;
+    }
+    currentCluster = i;
     dataContent.innerHTML = '';
     dataBox.style.display = "block";
     var contentString = '<b>Cluster ' + (i + 1) + '</b><br><br>';
 
-    //get area of coresponding polygon
-    var area = google.maps.geometry.spherical.computeArea(polygonArray[i].getPath());
-    area = area.toFixed(2);
-    contentString = contentString + "Area: " + area + " sqm <br>";
-
+    
     //get number of patients in the cluster
     var patientNum = clusterArray[i].length;
     contentString = contentString + "No. of patients: " + patientNum + "<br>";
 
-    //get density people per sq m
-    var density = patientNum / area;
-    density = density.toFixed(4);
-    contentString = contentString + "Density: " + density + " patient per sqm <br>";
+    //get area of coresponding polygon
+    if(clusterArray[i].length > 2){
+        var area = google.maps.geometry.spherical.computeArea(polygonArray[i].getPath());
+        area = area.toFixed(2);
+        contentString = contentString + "Area: " + area + " sqm <br>";
+
+        //get density people per sq m
+        var density = patientNum / area;
+        density = density.toFixed(4);
+        contentString = contentString + "Density: " + density + " patient per sqm <br>";
+    }
+
+    //filter cluster array with non undefined streets
+    var validPoints = clusterArray[i].filter(function (point){
+        return point.street !== undefined;
+    });
+    //get street names
+    var uniqueStreets = [... new Set(validPoints.map(point => point.street))];
+
+    //display streets
+    contentString = contentString + "<br>Affected Streets: " + uniqueStreets.join(', ');
 
     document.getElementById("data-content").innerHTML = contentString;
+    
+    getNearestHospitals(clusterArray[i], function(result){
+        var container = document.getElementById("nearby-hospital");
+        container.innerHTML='';
+
+        for(var i=0; i<result.length; i++){
+            hospitalLatLng = {lat: result[i].geometry.location.lat(), lng: result[i].geometry.location.lng()};
+            console.log(result[i].geometry.location.lng());
+
+            hospitalName = result[i].name;
+            hospitalLocation = result[i].vicinity;
+
+            var hospitalDetails = document.createElement("div");
+            hospitalDetails.setAttribute("class", "hospital-details");
+            hospitalDetails.setAttribute("onclick", "goToHospital(" + JSON.stringify(hospitalLatLng) + ")");
+
+            var hospitalNameDiv = document.createElement("div");
+            hospitalNameDiv.setAttribute("class", "hospital-name");
+            hospitalNameDiv.innerHTML = hospitalName;     
+            
+            var hospitalLocationDiv = document.createElement("div");
+            hospitalLocationDiv.setAttribute("class", "hospital-location");
+            hospitalLocationDiv.innerHTML = hospitalLocation;
+
+            hospitalDetails.append(hospitalNameDiv);
+            hospitalDetails.append(hospitalLocationDiv);
+
+            container.append(hospitalDetails);
+        }
+    });
+}
+
+function goToHospital(latLng){
+    map.panTo(latLng);
+    map.setZoom(20);
+}
+function getNearestHospitals(points, callback){
+    var hospitals = [];
+
+    var center = getCenter(points);
+    
+    service = new google.maps.places.PlacesService(map);
+
+    service.nearbySearch({
+        location: center,
+        radius: '1000',
+        type: ['hospital']
+    }, function(result, status){
+        if(status == google.maps.places.PlacesServiceStatus.OK){
+            for(var i=0; i < 5; i++){
+                if(result[i] !== undefined){
+                    hospitals.push(result[i]);
+                }
+            }
+            callback(hospitals);
+        }
+    });
+}
+
+function getCenter(points){
+    var latAverage = points.reduce((a, b) => a + b.lat, 0) / points.length;
+    var lngAverage = points.reduce((a, b) => a + b.lng, 0) / points.length;
+    return {lat: latAverage, lng: lngAverage};
 }
 
 function closeData(){
     dataBox.style.display = "none";
+    currentCluster = 'none';
 }
 
 function createClusterDropdown(){
@@ -305,7 +400,7 @@ function viewPolygon(i){
     var bounds = polygonArray[i - 1].getBounds();
     map.fitBounds(bounds, 100);
 
-    clusterData(i - 1);
+    displayClusterData(i - 1);
 }
 
 function drawPolygons() {
@@ -424,6 +519,7 @@ function createAreaDropdown() {
 function addMarker(){
     if(addMode){
         addMode = false;
+        searchInput.style.display = "none";
         messageStyle.style.display = "none";
         google.maps.event.removeListener(addMarkerEvent);
         return;
@@ -431,26 +527,29 @@ function addMarker(){
     addMode = true;
     removeMode = false;
     
+    searchInput.style.display = "flex";
     messageStyle.style.display = "block";
     messageStyle.innerHTML = "You are in Add Mode. Click 'Add' again to exit";
     addMarkerEvent = map.addListener("click", (mapsMouseEvent) =>{
         counter++; // index of available space in array or last index
 
-        createMarker(mapsMouseEvent.latLng, counter);
+        createMarker({lat: mapsMouseEvent.latLng.lat(), lng: mapsMouseEvent.latLng.lng()}, counter);
+        
+        patientLocations.push({id: counter, lat: mapsMouseEvent.latLng.lat(), lng: mapsMouseEvent.latLng.lng()});
 
-        getAddress(mapsMouseEvent.latLng.lat(), mapsMouseEvent.latLng.lng(), function(address){
+        cluster();  
+
+        getAddress(mapsMouseEvent.latLng.lat(), mapsMouseEvent.latLng.lng(), function(address, street, i){
             //these codes are inside the callback function
             //because we have to make sure that the geocoding is done before proceeding
-            patientLocations.push({id: counter, lat: mapsMouseEvent.latLng.lat(), lng: mapsMouseEvent.latLng.lng(), address: address});
-            printAddress();
-
-            cluster(patientLocations);   
-        });
+            patientLocations[i-1].address = address;
+            patientLocations[i-1].street = street;
+            printAddress(); 
+        }, counter);
     });
 }
 
 function removeMarker(){
-    //console.clear()
     if(removeMode){
         removeMode = false;
         messageStyle.style.display = "none";
@@ -460,6 +559,7 @@ function removeMarker(){
     addMode = false;
     google.maps.event.removeListener(addMarkerEvent);
    
+    searchInput.style.display = "none";
     messageStyle.style.display = "block";
     messageStyle.innerHTML = "You are in Remove Mode. Click 'Remove' again to exit";
 }
@@ -477,4 +577,24 @@ function saveData(){
 function closeSaveMessage(){
     var saveMessageBox = document.getElementById("save-message-box");
     saveMessageBox.style.display = "none";
+}
+
+function saveImage(){
+    window.scrollTo(0,0);
+
+    canvasContainer.innerHTML = '';
+    exportBox.style.display = "block";
+
+    html2canvas(document.getElementById("map-container"),{
+        scrollY: 80,
+        useCORS: true
+    }).then(canvas =>{
+        canvas.style.height = "auto";
+        canvas.style.width = "700px";
+        canvasContainer.appendChild(canvas);
+    });
+}
+
+function closeExportBox(){
+    exportBox.style.display = "none";
 }

@@ -91,12 +91,18 @@ function initMap() {
             map.setCenter(place.geometry.location);
             map.setZoom(27);
         }
-        counter++;
-        createMarker(place.geometry.location, counter);
-        getAddress(place.geometry.location.lat(), place.geometry.location.lng(), function(result, street, i){
-            patientLocations.push({id: counter, lat: place.geometry.location.lat(), lng: place.geometry.location.lng(), address: result, street: street});
-            cluster();
-        });
+        if(!hospitalMode){
+            counter++;
+            createMarker(place.geometry.location, counter);
+            getAddress(place.geometry.location.lat(), place.geometry.location.lng(), function(result, street, i){
+                patientLocations.push({id: counter, lat: place.geometry.location.lat(), lng: place.geometry.location.lng(), address: result, street: street});
+                cluster();
+            });
+        } else {
+            hospitalCounter++;
+            hospitalArray.push({id: hospitalCounter, lat: place.geometry.location.lat(), lng: place.geometry.location.lng(), name: ''});
+            createHospital(place.geometry.location, hospitalCounter);
+        }
     });
 }
 

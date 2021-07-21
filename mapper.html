@@ -52,22 +52,19 @@
 				<div id="cluster-dropdown" class="dropdown">
 				</div>
 			</div>
-			<div class="button-container">
-				<button type="button" id="add-marker-button" class="mapperbutton" onclick="addMarker()">
+			<div class="button-container go-to-area-button">
+				<button type="button" id="add-marker-button" class="mapperbutton" onclick="">
 					Add
 				</button>
+				<div class="dropdown">
+					<div class="cluster-dropdown-content" onclick="addMarker('patient')">Patient</div>
+					<div class="cluster-dropdown-content" onclick="addMarker('hospital')">Hospital</div>
+				</div>
 			</div>
-			<div class="button-container">
-			<button type="button" id="remove-marker-button" class="mapperbutton" onclick="removeMarker()">
-				Remove
-			</button>
-			</div>
-			<div class="button-container">
-				<a href="#popup1" >
-					<button type="button" id="remove-marker-button" class="mapperbutton">
-						Show Table
-					</button>
-				</a>
+			<div class="button-container go-to-area-button">
+				<button type="button" id="remove-marker-button" class="mapperbutton" onclick="removeMarker()">
+					Remove
+				</button>
 			</div>
 			<div class="button-container">
 				<button type="button" id="save-button" class="mapperbutton finish" onclick="saveData()">
@@ -78,6 +75,33 @@
 				<button type="button" id="export-button" class="mapperbutton finish" onclick="saveImage()">
 					Export
 				</button>
+			</div>
+		</div>
+
+		<div class="options">
+			<div class="button-container">
+				<a href="#distancepopup">
+					<button type="button" id="remove-marker-button" class="mapperbutton" onclick="togglePopup()">
+						Change Connection Distance
+					</button>
+				</a>
+			</div>
+
+			<div class="button-container">
+				<div class="mapperbutton distance-box">
+					<p>
+						Distance
+					</p>
+					<input class="distance-range" oninput="changeDistanceFromSlider()" type="range" id="distance-range" min="0" max="100" value="65"/>
+				</div>
+			</div>
+
+			<div class="button-container">
+				<a href="#popup1" >
+					<button type="button" id="remove-marker-button" class="mapperbutton" onclick="printAddress()">
+						Show Table
+					</button>
+				</a>
 			</div>
 		</div>
 
@@ -124,6 +148,31 @@
 			</div>
 		</div>
 	</div>
+
+	<div class="distancepopup" id="distancepopup">
+				<div class="distanceoverlay"></div>
+				<div class="content">
+					<div class="close-btn" onclick="togglePopup()">&times;
+					</div>
+					<h1>Change Person's Distance</h1>
+					<p>Input a number to change the value that determines the distance of one person to another in considering the creation of the COVID-19 spatial extent.</p>
+					<br>
+
+					<div style="white-space:nowrap">
+   					 <label for="currentval">Input New Value:</label>
+    				<input type="text" id="currentval" placeholder="Input Value"/>
+    				<button type="button" id="export-button" class="confirmbutton" onclick="changeDistance()">
+    					Confirm
+    				</button>
+					</div>
+					<br>
+					
+   					<h5>Current Value:</h5><hr>
+    				<h4 id="currentvalue"></h4>
+					
+
+				</div>
+			</div>
 
 	<script>
 		

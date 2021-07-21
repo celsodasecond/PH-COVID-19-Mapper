@@ -346,6 +346,8 @@ nav ul li a:hover{
 .dropdown-content:hover, .cluster-dropdown-content:hover{ background-color: rgb(247, 247, 247); }
 
 .data{
+	top: 45px;
+	height:520px;
 	display: none;
 	border: 1px solid #3f0d12;
     margin-bottom: 10px;
@@ -356,8 +358,6 @@ nav ul li a:hover{
 	z-index: 2;
     background-color: white;
     opacity: 0.8;
-	top: 50px;
-	left: 20px;
 	box-shadow: 2px 2px 20px rgb(0 0 0 / 40%);
 }
 
@@ -414,6 +414,8 @@ padding: 14px;
 #searchInput{
 	border-radius: 55px;
 	padding: 12px;
+	margin-top: 10px;
+	opacity: 0.85;
 	width: 70%;
 	background: #f0f3ff;
 	display: none;
@@ -434,6 +436,19 @@ input{
 	background: transparent;
 	outline: none;
 }
+
+#currentval {
+  border-radius: 2px;
+  position: relative;
+  width: 55%;
+  height: 100%;
+  left: 0;
+  border: none;
+  font-size: 17px;
+  font-weight: 200;
+  background-color: lightgrey;
+}
+
 
 .overlay {
 	position: fixed;
@@ -531,26 +546,21 @@ td{
 	padding: 10px;
     border: 3px solid rgba(200,200,200);
     border-radius: 5px;
-	cursor: pointer;
-	transition: 0.5s;
 	margin-bottom:10px;
 }
 
-.hospital-details:hover{
+.hospital-name:hover{
 	color: green;
-	border: 3px solid green;
+	cursor: pointer;
+	transition: 0.5s;
+	margin-bottom: 5px;
 }
 
-.hospital-name{
-	font-weight: 600;
+.note{
+	padding-top: 10px;
 }
-
-.hospital-location{
-	font-size: smaller;
-}
-
 .nearby-hospital-wrapper{
-	height: 200px;
+	height: 280px;
 	overflow: auto;
 }
 
@@ -566,6 +576,92 @@ td{
 ::-webkit-scrollbar-thumb:hover {
 	background: green;
   }
+
+.distancepopup .distanceoverlay {
+	position: fixed;
+	top: 0px;
+	left: 0px;
+	width: 100vw;
+	height: 100vh;
+	background: rgba(0, 0, 0, 0.7);
+	z-index: 1;
+	display: none;
+}
+
+.distancepopup .content{
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%) scale(0);
+	background: #fff;
+	width: 450px;
+	height: 220px;
+	z-index: 2;
+	text-align: left;
+	padding: 20px;
+	box-sizing: border-box;
+}
+
+.distancepopup .content h1{
+	font-size: 24px;
+}
+
+.distancepopup .content p{
+	font-size: 12px;
+}
+
+.distancepopup .close-btn {
+	cursor: pointer;
+	position: absolute;
+	right: 20px;
+	top: 20px;
+	width: 30px;
+	height: 30px;
+	background: #222;
+	color: #fff;
+	font-size: 25px;
+	font-weight: 600;
+	line-height: 30px;
+	text-align: center;
+	border-radius: 50%;
+}
+
+.distancepopup.active .distanceoverlay {
+	display: block;
+}
+
+.distancepopup.active .content{
+	transition: all 300ms ease-in-out;
+	transform: translate(-50%, -50%) scale(1);
+}
+
+.confirmbutton {
+  background-color: white; 
+  color: black; 
+  border: 1px solid #f44336;
+  padding: 1px 2px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 2px;
+  transition-duration: 0.4s;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+.confirmbutton:hover {
+  background-color: #f44336;
+  color: white;
+}
+
+.distance-box{
+	display:flex;
+	width:auto;
+}
+.distance-range{
+	width: -webkit-fill-available;
+}
 
 @media only screen and (max-width:700px) {
 	nav ul{
